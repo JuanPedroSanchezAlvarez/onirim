@@ -5,8 +5,11 @@ import lombok.Data;
 
 @Data
 public class DoorCard extends Card {
+
     private Color color;
+
     public DoorCard(Color color) {
         this.color = color;
     }
+
 }

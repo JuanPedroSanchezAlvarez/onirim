@@ -6,10 +6,13 @@ import lombok.Data;
 
 @Data
 public class LabyrinthCard extends Card {
+
     private Color color;
     private Symbol symbol;
+
     public LabyrinthCard(Color color, Symbol symbol) {
         this.color = color;
         this.symbol = symbol;
     }
+
 }

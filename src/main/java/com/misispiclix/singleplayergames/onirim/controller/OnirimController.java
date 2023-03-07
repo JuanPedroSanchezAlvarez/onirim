@@ -17,4 +17,12 @@ public class OnirimController {
         return onirimService.createNewGame();
     }
 
+    public Game playCardFromHand(Game game, Integer playedCardIndex) {
+        return onirimService.playCardFromHand(game, playedCardIndex);
+    }
+
+    public Game discardCardFromHand(Game game, Integer discardedCardIndex) {
+        return onirimService.discardCardFromHand(game, discardedCardIndex);
+    }
+
 }

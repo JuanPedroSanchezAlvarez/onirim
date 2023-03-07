@@ -19,7 +19,17 @@ public class OnirimServiceImpl implements IOnirimService {
     public Game createNewGame() {
         Game game = new Game();
         initializeCardDeck(game);
-        initializeGame(game);
+        initializePlayerHand(game);
+        return game;
+    }
+
+    @Override
+    public Game playCardFromHand(Game game, Integer playedCardIndex) {
+        return game;
+    }
+
+    @Override
+    public Game discardCardFromHand(Game game, Integer discardedCardIndex) {
         return game;
     }
 
@@ -50,7 +60,7 @@ public class OnirimServiceImpl implements IOnirimService {
         Collections.shuffle(game.getBoard().getCardDeck());
     }
 
-    private void initializeGame(Game game) {
+    private void initializePlayerHand(Game game) {
         while (game.getBoard().getPlayerHand().size() < 5) {
             Card card = game.getBoard().getCardDeck().get(game.getBoard().getCardDeck().size() - 1);
             game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1);

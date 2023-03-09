@@ -5,6 +5,7 @@ import com.misispiclix.singleplayergames.onirim.dto.card.Card;
 import com.misispiclix.singleplayergames.onirim.dto.card.DoorCard;
 import com.misispiclix.singleplayergames.onirim.dto.card.LabyrinthCard;
 import com.misispiclix.singleplayergames.onirim.dto.card.NightmareCard;
+import com.misispiclix.singleplayergames.onirim.enums.ActionAllowed;
 import com.misispiclix.singleplayergames.onirim.enums.Color;
 import com.misispiclix.singleplayergames.onirim.enums.Symbol;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
@@ -20,6 +21,8 @@ public class OnirimServiceImpl implements IOnirimService {
         Game game = new Game();
         initializeCardDeck(game);
         initializePlayerHand(game);
+        game.getActionsAllowed().add(ActionAllowed.PLAY_CARD_FROM_HAND);
+        game.getActionsAllowed().add(ActionAllowed.DISCARD_CARD_FROM_HAND);
         return game;
     }
 

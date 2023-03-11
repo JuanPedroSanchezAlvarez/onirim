@@ -1,6 +1,6 @@
 package com.misispiclix.singleplayergames.onirim.dto;
 
-import com.misispiclix.singleplayergames.onirim.enums.ActionAllowed;
+import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -10,11 +10,13 @@ import java.util.List;
 public class Game {
 
     private Board board;
-    private List<ActionAllowed> actionsAllowed;
+    private List<AllowedAction> allowedActions;
+    private String messageToDisplay;
 
     public Game() {
         this.board = new Board();
-        this.actionsAllowed = new ArrayList<>();
+        this.allowedActions = new ArrayList<>();
+        this.messageToDisplay = "";
     }
 
 }

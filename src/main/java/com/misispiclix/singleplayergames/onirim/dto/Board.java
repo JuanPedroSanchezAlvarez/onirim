@@ -1,6 +1,7 @@
 package com.misispiclix.singleplayergames.onirim.dto;
 
 import com.misispiclix.singleplayergames.onirim.dto.card.Card;
+import com.misispiclix.singleplayergames.onirim.dto.card.DoorCard;
 import com.misispiclix.singleplayergames.onirim.dto.card.LabyrinthCard;
 import lombok.Data;
 
@@ -14,12 +15,14 @@ public class Board {
     private List<Card> limboStack;
     private List<LabyrinthCard> playedCards;
     private List<Card> playerHand;
+    private List<DoorCard> discoveredDoors;
 
     public Board() {
         this.cardDeck = new ArrayList<>();
         this.limboStack = new ArrayList<>();
         this.playedCards = new ArrayList<>();
         this.playerHand = new ArrayList<>();
+        this.discoveredDoors = new ArrayList<>();
     }
 
 }

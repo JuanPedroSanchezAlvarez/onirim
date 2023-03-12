@@ -39,11 +39,14 @@ public class OnirimServiceImpl implements IOnirimService {
         playCard(game, playedCardIndex);
         // We check that the card just played is the third consecutive card of the same color.
         if (validateThirdConsecutiveCardOfTheSameColor(game.getBoard().getPlayedCards())) {
-            // TODO Si la carta es la tercera consecutiva del mismo color, busca una carta de puerta de ese mismo color y se coloca delante.
+            // We look for a door card of that same color and play it.
+            discoverDoor(game);
         }
-        // TODO Se baraja el mazo.
-        // TODO Robar.
-        // TODO Barajar.
+        // If there are less than 5 cards in hand, we must draw a card.
+        if (game.getBoard().getPlayerHand().size() < 5) {
+            game.getAllowedActions().clear();
+            game.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        }
         return game;
     }
 
@@ -95,6 +98,24 @@ public class OnirimServiceImpl implements IOnirimService {
     private void playCard(Game game, Integer playedCardIndex) {
         game.getBoard().getPlayedCards().add((LabyrinthCard) game.getBoard().getPlayerHand().get(playedCardIndex));
         game.getBoard().getPlayerHand().remove(playedCardIndex.intValue());
+    }
+
+    private void discoverDoor(Game game) {
+        Card doorCardFound = null;
+        for (Card card : game.getBoard().getCardDeck()) {
+            if (card instanceof DoorCard) {
+                DoorCard doorCard = (DoorCard) card;
+                if (doorCard.getColor().equals(game.getBoard().getPlayedCards().get(game.getBoard().getCardDeck().size() - 1).getColor())) {
+                    game.getBoard().getDiscoveredDoors().add(doorCard);
+                    doorCardFound = card;
+                    break;
+                }
+            }
+        }
+        if (null != doorCardFound) {
+            game.getBoard().getCardDeck().remove(doorCardFound);
+        }
+        shuffleCardDeck(game);
     }
 
     private boolean validateAllowedAction(Game game, AllowedAction allowedAction) {

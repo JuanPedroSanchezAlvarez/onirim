@@ -42,16 +42,29 @@ public class OnirimServiceImpl implements IOnirimService {
             // We look for a door card of that same color and play it.
             discoverDoor(game);
         }
-        // If there are less than 5 cards in hand, we must draw a card.
-        if (game.getBoard().getPlayerHand().size() < 5) {
-            game.getAllowedActions().clear();
-            game.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
-        }
+        // We must draw a card.
+        game.getAllowedActions().clear();
+        game.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
         return game;
     }
 
     @Override
     public Game discardCardFromHand(Game game, Integer discardedCardIndex) {
+        // We check that the action is allowed.
+        if (!validateAllowedAction(game, AllowedAction.DISCARD_CARD_FROM_HAND)) { return game; }
+        // We check that the chosen card exists in the hand.
+        if (!validatePlayedCardIndex(game, discardedCardIndex)) { return game; }
+        // We discard the chosen card.
+        discardCard(game, discardedCardIndex);
+        // We check that the discarded card has the key symbol.
+        game.getAllowedActions().clear();
+        if (validateDiscardedCardHasKeySymbol(game.getBoard().getDiscardedCards())) {
+            // We must activate a prophecy.
+            game.getAllowedActions().add(AllowedAction.ACTIVATE_PROPHECY);
+        } else {
+            // We must draw a card.
+            game.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        }
         return game;
     }
 
@@ -98,6 +111,11 @@ public class OnirimServiceImpl implements IOnirimService {
     private void playCard(Game game, Integer playedCardIndex) {
         game.getBoard().getPlayedCards().add((LabyrinthCard) game.getBoard().getPlayerHand().get(playedCardIndex));
         game.getBoard().getPlayerHand().remove(playedCardIndex.intValue());
+    }
+
+    private void discardCard(Game game, Integer discardedCardIndex) {
+        game.getBoard().getDiscardedCards().add(game.getBoard().getPlayerHand().get(discardedCardIndex));
+        game.getBoard().getPlayerHand().remove(discardedCardIndex.intValue());
     }
 
     private void discoverDoor(Game game) {
@@ -150,6 +168,14 @@ public class OnirimServiceImpl implements IOnirimService {
         LabyrinthCard fourthCard = playedCards.get(playedCards.size() -4);
         boolean fourthCardOfTheSameColor = lastCard.getColor().equals(fourthCard.getColor());
         return lastThreeCardsOfTheSameColor && !fourthCardOfTheSameColor;
+    }
+
+    private boolean validateDiscardedCardHasKeySymbol(List<Card> discardedCards) {
+        Card discardedCard = discardedCards.get(discardedCards.size() -1);
+        if (discardedCard instanceof LabyrinthCard discardedLabyrinthCard) {
+            return discardedLabyrinthCard.getSymbol().equals(Symbol.KEY);
+        }
+        return false;
     }
 
 }

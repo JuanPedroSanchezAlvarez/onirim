@@ -17,6 +17,7 @@ public class Board {
     private List<Card> playerHand;
     private List<DoorCard> discoveredDoors;
     private List<Card> discardedCards;
+    private List<Card> cardsToShow;
 
     public Board() {
         this.cardDeck = new ArrayList<>();
@@ -25,6 +26,7 @@ public class Board {
         this.playerHand = new ArrayList<>();
         this.discoveredDoors = new ArrayList<>();
         this.discardedCards = new ArrayList<>();
+        this.cardsToShow = new ArrayList<>();
     }
 
 }

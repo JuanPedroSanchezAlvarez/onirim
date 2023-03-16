@@ -58,13 +58,25 @@ public class OnirimServiceImpl implements IOnirimService {
         discardCard(game, discardedCardIndex);
         // We check that the discarded card has the key symbol.
         game.getAllowedActions().clear();
-        if (validateDiscardedCardHasKeySymbol(game.getBoard().getDiscardedCards())) {
+        if (validateDiscardedCardHasKeySymbol(game.getBoard().getDiscardedCards()) && !game.getBoard().getCardDeck().isEmpty()) {
             // We must activate a prophecy.
             game.getAllowedActions().add(AllowedAction.ACTIVATE_PROPHECY);
         } else {
             // We must draw a card.
             game.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
         }
+        return game;
+    }
+
+    @Override
+    public Game activateProphecy(Game game) {
+        // We check that the action is allowed.
+        if (!validateAllowedAction(game, AllowedAction.ACTIVATE_PROPHECY)) { return game; }
+        // We show the prophecy cards.
+        showProphecyCards(game);
+        // We must confirm the prophecy.
+        game.getAllowedActions().clear();
+        game.getAllowedActions().add(AllowedAction.CONFIRM_PROPHECY);
         return game;
     }
 
@@ -134,6 +146,14 @@ public class OnirimServiceImpl implements IOnirimService {
             game.getBoard().getCardDeck().remove(doorCardFound);
         }
         shuffleCardDeck(game);
+    }
+
+    private void showProphecyCards(Game game) {
+        int numberOfCardsToShow = Math.min(game.getBoard().getCardDeck().size(), 5);
+        for (int i = 0; i < numberOfCardsToShow; i++) {
+            game.getBoard().getCardsToShow().add(game.getBoard().getCardDeck().get(game.getBoard().getCardDeck().size() - 1));
+            game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1);
+        }
     }
 
     private boolean validateAllowedAction(Game game, AllowedAction allowedAction) {

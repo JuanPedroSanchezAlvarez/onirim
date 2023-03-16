@@ -25,4 +25,8 @@ public class OnirimController {
         return onirimService.discardCardFromHand(game, discardedCardIndex);
     }
 
+    public Game activateProphecy(Game game) {
+        return onirimService.activateProphecy(game);
+    }
+
 }

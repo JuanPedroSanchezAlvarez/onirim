@@ -4,6 +4,8 @@ import com.misispiclix.singleplayergames.onirim.dto.Game;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
+
 @Controller
 public class OnirimController {
 
@@ -27,6 +29,10 @@ public class OnirimController {
 
     public Game activateProphecy(Game game) {
         return onirimService.activateProphecy(game);
+    }
+
+    public Game confirmProphecy(Game game, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
+        return onirimService.confirmProphecy(game, discardedCardIndex, reorderedCardIndexes);
     }
 
 }

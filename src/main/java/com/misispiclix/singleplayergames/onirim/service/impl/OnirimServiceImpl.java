@@ -11,6 +11,7 @@ import com.misispiclix.singleplayergames.onirim.enums.Symbol;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -77,6 +78,20 @@ public class OnirimServiceImpl implements IOnirimService {
         // We must confirm the prophecy.
         game.getAllowedActions().clear();
         game.getAllowedActions().add(AllowedAction.CONFIRM_PROPHECY);
+        return game;
+    }
+
+    @Override
+    public Game confirmProphecy(Game game, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
+        // We check that the action is allowed.
+        if (!validateAllowedAction(game, AllowedAction.CONFIRM_PROPHECY)) { return game; }
+        // We discard the chosen card.
+        game.getBoard().getDiscardedCards().add(game.getBoard().getCardsToShow().get(discardedCardIndex));
+        // We rearrange the top cards of the main deck in the chosen order.
+        rearrangeTopCardsOfTheCardDeck(game, reorderedCardIndexes);
+        // We must draw a card.
+        game.getAllowedActions().clear();
+        game.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
         return game;
     }
 
@@ -154,6 +169,24 @@ public class OnirimServiceImpl implements IOnirimService {
             game.getBoard().getCardsToShow().add(game.getBoard().getCardDeck().get(game.getBoard().getCardDeck().size() - 1));
             game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1);
         }
+    }
+
+    private void rearrangeTopCardsOfTheCardDeck(Game game, List<Integer> reorderedCardIndexes) {
+        List<Card> reorderedCardList = new ArrayList<>();
+        for (int i = 0; i < reorderedCardIndexes.size(); i++) {
+            int j = 0;
+            for (Integer index : reorderedCardIndexes) {
+                if (i == index) {
+                    reorderedCardList.add(game.getBoard().getCardsToShow().get(j));
+                }
+                j++;
+            }
+        }
+        while (!reorderedCardList.isEmpty()) {
+            game.getBoard().getCardDeck().add(reorderedCardList.get(reorderedCardList.size() - 1));
+            reorderedCardList.remove(reorderedCardList.size() - 1);
+        }
+        game.getBoard().getCardsToShow().clear();
     }
 
     private boolean validateAllowedAction(Game game, AllowedAction allowedAction) {

@@ -35,4 +35,8 @@ public class OnirimController {
         return onirimService.confirmProphecy(game, discardedCardIndex, reorderedCardIndexes);
     }
 
+    public Game drawCardFromDeck(Game game) {
+        return onirimService.drawCardFromDeck(game);
+    }
+
 }

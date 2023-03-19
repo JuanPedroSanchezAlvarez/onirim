@@ -95,6 +95,19 @@ public class OnirimServiceImpl implements IOnirimService {
         return game;
     }
 
+    @Override
+    public Game drawCardFromDeck(Game game) {
+        // We check that the action is allowed.
+        if (!validateAllowedAction(game, AllowedAction.DRAW_CARD_FROM_DECK)) { return game; }
+        // We check that the main deck is not empty.
+        if (!validateCardDeckNotEmpty(game)) { return game; }
+        // We draw a card from the main deck.
+        drawCard(game);
+        // We check the type of card that has been drawn and act accordingly.
+        checkTypeOfCardDrawn(game);
+        return game;
+    }
+
     private void initializeCardDeck(Game game) {
         for (int i = 0; i < 10; i++) { game.getBoard().getCardDeck().add(new NightmareCard()); }
         for (int i = 0; i < 3; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.RED, Symbol.KEY)); }
@@ -145,6 +158,10 @@ public class OnirimServiceImpl implements IOnirimService {
         game.getBoard().getPlayerHand().remove(discardedCardIndex.intValue());
     }
 
+    private void drawCard(Game game) {
+        game.getBoard().getPlayerHand().add(game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1));
+    }
+
     private void discoverDoor(Game game) {
         Card doorCardFound = null;
         for (Card card : game.getBoard().getCardDeck()) {
@@ -189,6 +206,27 @@ public class OnirimServiceImpl implements IOnirimService {
         game.getBoard().getCardsToShow().clear();
     }
 
+    private void checkTypeOfCardDrawn(Game game) {
+        switch (game.getBoard().getPlayerHand().get(game.getBoard().getPlayerHand().size() - 1)) {
+            case LabyrinthCard labyrinthCard -> { labyrinthCardDrawnAction(game); }
+            case DoorCard doorCard -> { doorCardDrawnAction(game); }
+            case NightmareCard nightmareCard -> { nightmareCardDrawnAction(game); }
+            default -> { game.setMessageToDisplay("ERROR: Card type not found."); }
+        };
+    }
+
+    private void labyrinthCardDrawnAction(Game game) {
+        // TODO
+    }
+
+    private void doorCardDrawnAction(Game game) {
+        // TODO
+    }
+
+    private void nightmareCardDrawnAction(Game game) {
+        // TODO
+    }
+
     private boolean validateAllowedAction(Game game, AllowedAction allowedAction) {
         game.setMessageToDisplay(game.getAllowedActions().contains(allowedAction) ? "" : "Action not allowed.");
         return game.getMessageToDisplay().isEmpty();
@@ -229,6 +267,11 @@ public class OnirimServiceImpl implements IOnirimService {
             return discardedLabyrinthCard.getSymbol().equals(Symbol.KEY);
         }
         return false;
+    }
+
+    private boolean validateCardDeckNotEmpty(Game game) {
+        game.setMessageToDisplay(game.getBoard().getCardDeck().isEmpty() ? "Game Over." : "");
+        return game.getMessageToDisplay().isEmpty();
     }
 
 }

@@ -10,4 +10,5 @@ public interface IOnirimService {
     Game discardCardFromHand(Game game, Integer discardedCardIndex);
     Game activateProphecy(Game game);
     Game confirmProphecy(Game game, Integer discardedCardIndex, List<Integer> reorderedCardIndexes);
+    Game drawCardFromDeck(Game game);
 }

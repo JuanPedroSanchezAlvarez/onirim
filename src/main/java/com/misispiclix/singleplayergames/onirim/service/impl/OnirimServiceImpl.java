@@ -247,7 +247,22 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private void nightmareCardDrawnAction(Game game) {
-        // TODO
+        game.getAllowedActions().clear();
+        for (Card card : game.getBoard().getPlayerHand()) {
+            if (card instanceof LabyrinthCard labyrinthCard) {
+                if (labyrinthCard.getSymbol().equals(Symbol.KEY)) {
+                    game.getAllowedActions().add(AllowedAction.DISCARD_KEY_CARD_FROM_HAND);
+                    break;
+                }
+            }
+        }
+        if (!game.getBoard().getDiscoveredDoors().isEmpty()) {
+            game.getAllowedActions().add(AllowedAction.LOOSE_DOOR_CARD);
+        }
+        if (!game.getBoard().getCardDeck().isEmpty()) {
+            game.getAllowedActions().add(AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
+        }
+        game.getAllowedActions().add(AllowedAction.DISCARD_PLAYER_HAND);
     }
 
     private boolean validateAllowedAction(Game game, AllowedAction allowedAction) {

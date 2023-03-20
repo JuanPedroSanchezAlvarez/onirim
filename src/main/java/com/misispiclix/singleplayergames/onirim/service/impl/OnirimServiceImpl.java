@@ -209,18 +209,41 @@ public class OnirimServiceImpl implements IOnirimService {
     private void checkTypeOfCardDrawn(Game game) {
         switch (game.getBoard().getPlayerHand().get(game.getBoard().getPlayerHand().size() - 1)) {
             case LabyrinthCard labyrinthCard -> { labyrinthCardDrawnAction(game); }
-            case DoorCard doorCard -> { doorCardDrawnAction(game); }
+            case DoorCard doorCard -> { doorCardDrawnAction(game, doorCard); }
             case NightmareCard nightmareCard -> { nightmareCardDrawnAction(game); }
             default -> { game.setMessageToDisplay("ERROR: Card type not found."); }
         };
     }
 
     private void labyrinthCardDrawnAction(Game game) {
-        // TODO
+        game.getAllowedActions().clear();
+        if (game.getBoard().getPlayerHand().size() >= 5) {
+            game.getAllowedActions().add(AllowedAction.PLAY_CARD_FROM_HAND);
+            game.getAllowedActions().add(AllowedAction.DISCARD_CARD_FROM_HAND);
+        } else {
+            game.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        }
     }
 
-    private void doorCardDrawnAction(Game game) {
-        // TODO
+    private void doorCardDrawnAction(Game game, DoorCard doorCard) {
+        // We check if we have a labyrinth card in hand with the key symbol and the same color as the drawn door card.
+        boolean cardWithKeySymbolAndSameColorFound = false;
+        for (int i = 0; i < game.getBoard().getPlayerHand().size(); i++) {
+            if (game.getBoard().getPlayerHand().get(i) instanceof LabyrinthCard labyrinthCard) {
+                // If we have it, we discover the door and discard the key card.
+                if (labyrinthCard.getSymbol().equals(Symbol.KEY) && labyrinthCard.getColor().equals(doorCard.getColor())) {
+                    cardWithKeySymbolAndSameColorFound = true;
+                    game.getBoard().getDiscoveredDoors().add((DoorCard) game.getBoard().getPlayerHand().remove(game.getBoard().getPlayerHand().size() - 1));
+                    game.getBoard().getDiscardedCards().add(game.getBoard().getPlayerHand().remove(i));
+                    break;
+                }
+            }
+        }
+        // If we don't have it, we put the door card in the limbo stack.
+        if (!cardWithKeySymbolAndSameColorFound) {
+            game.getBoard().getLimboStack().add(game.getBoard().getPlayerHand().remove(game.getBoard().getPlayerHand().size() - 1));
+        }
+        labyrinthCardDrawnAction(game);
     }
 
     private void nightmareCardDrawnAction(Game game) {

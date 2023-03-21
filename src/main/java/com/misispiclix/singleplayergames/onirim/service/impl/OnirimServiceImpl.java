@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class OnirimServiceImpl implements IOnirimService {
@@ -140,7 +141,17 @@ public class OnirimServiceImpl implements IOnirimService {
     public Game discardTopCardsFromDeck(Game game) {
         // We check that the action is allowed.
         if (!validateAllowedAction(game, AllowedAction.DISCARD_TOP_CARDS_FROM_DECK)) { return game; }
-        // TODO
+        // We discard the top cards from the main deck.
+        int numberOfCardsToDiscard = Math.min(game.getBoard().getCardDeck().size(), 5);
+        for (int i = 0; i < numberOfCardsToDiscard; i++) {
+            if (game.getBoard().getCardDeck().get(game.getBoard().getCardDeck().size() - 1) instanceof LabyrinthCard) {
+                game.getBoard().getDiscardedCards().add(game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1));
+            } else {
+                game.getBoard().getLimboStack().add(game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1));
+            }
+        }
+        // We set the next allowed actions.
+        checkPlayerHandSizeAndSetAllowedActions(game);
         return game;
     }
 
@@ -149,6 +160,8 @@ public class OnirimServiceImpl implements IOnirimService {
         // We check that the action is allowed.
         if (!validateAllowedAction(game, AllowedAction.DISCARD_PLAYER_HAND)) { return game; }
         // TODO
+        // We set the next allowed actions.
+        checkPlayerHandSizeAndSetAllowedActions(game);
         return game;
     }
 

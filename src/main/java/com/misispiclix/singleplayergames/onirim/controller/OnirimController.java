@@ -39,4 +39,20 @@ public class OnirimController {
         return onirimService.drawCardFromDeck(game);
     }
 
+    public Game discardKeyCardFromHand(Game game, Integer discardedCardIndex) {
+        return onirimService.discardKeyCardFromHand(game, discardedCardIndex);
+    }
+
+    public Game loseDoorCard(Game game, Integer doorCardIndex) {
+        return onirimService.loseDoorCard(game, doorCardIndex);
+    }
+
+    public Game discardTopCardsFromDeck(Game game) {
+        return onirimService.discardTopCardsFromDeck(game);
+    }
+
+    public Game discardPlayerHand(Game game) {
+        return onirimService.discardPlayerHand(game);
+    }
+
 }

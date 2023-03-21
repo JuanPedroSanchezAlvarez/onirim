@@ -108,6 +108,50 @@ public class OnirimServiceImpl implements IOnirimService {
         return game;
     }
 
+    @Override
+    public Game discardKeyCardFromHand(Game game, Integer discardedCardIndex) {
+        // We check that the action is allowed.
+        if (!validateAllowedAction(game, AllowedAction.DISCARD_KEY_CARD_FROM_HAND)) { return game; }
+        // We check that the chosen card exists in the hand.
+        if (!validatePlayedCardIndex(game, discardedCardIndex)) { return game; }
+        // We check that the chosen card is a key card.
+        if (!validateDiscardedCardIsKeyCard(game, discardedCardIndex)) { return game; }
+        // We discard the chosen key card from hand.
+        game.getBoard().getDiscardedCards().add(game.getBoard().getPlayerHand().remove(discardedCardIndex.intValue()));
+        // We set the next allowed actions.
+        checkPlayerHandSizeAndSetAllowedActions(game);
+        return game;
+    }
+
+    @Override
+    public Game loseDoorCard(Game game, Integer doorCardIndex) {
+        // We check that the action is allowed.
+        if (!validateAllowedAction(game, AllowedAction.LOSE_DOOR_CARD)) { return game; }
+        // We check that the chosen door card exists in the discovered doors zone.
+        if (!validateDiscardedDoorIndex(game, doorCardIndex)) { return game; }
+        // We move the chosen door card to the limbo stack.
+        game.getBoard().getLimboStack().add(game.getBoard().getDiscoveredDoors().remove(doorCardIndex.intValue()));
+        // We set the next allowed actions.
+        checkPlayerHandSizeAndSetAllowedActions(game);
+        return game;
+    }
+
+    @Override
+    public Game discardTopCardsFromDeck(Game game) {
+        // We check that the action is allowed.
+        if (!validateAllowedAction(game, AllowedAction.DISCARD_TOP_CARDS_FROM_DECK)) { return game; }
+        // TODO
+        return game;
+    }
+
+    @Override
+    public Game discardPlayerHand(Game game) {
+        // We check that the action is allowed.
+        if (!validateAllowedAction(game, AllowedAction.DISCARD_PLAYER_HAND)) { return game; }
+        // TODO
+        return game;
+    }
+
     private void initializeCardDeck(Game game) {
         for (int i = 0; i < 10; i++) { game.getBoard().getCardDeck().add(new NightmareCard()); }
         for (int i = 0; i < 3; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.RED, Symbol.KEY)); }
@@ -208,14 +252,14 @@ public class OnirimServiceImpl implements IOnirimService {
 
     private void checkTypeOfCardDrawn(Game game) {
         switch (game.getBoard().getPlayerHand().get(game.getBoard().getPlayerHand().size() - 1)) {
-            case LabyrinthCard labyrinthCard -> { labyrinthCardDrawnAction(game); }
+            case LabyrinthCard labyrinthCard -> { checkPlayerHandSizeAndSetAllowedActions(game); }
             case DoorCard doorCard -> { doorCardDrawnAction(game, doorCard); }
             case NightmareCard nightmareCard -> { nightmareCardDrawnAction(game); }
             default -> { game.setMessageToDisplay("ERROR: Card type not found."); }
         };
     }
 
-    private void labyrinthCardDrawnAction(Game game) {
+    private void checkPlayerHandSizeAndSetAllowedActions(Game game) {
         game.getAllowedActions().clear();
         if (game.getBoard().getPlayerHand().size() >= 5) {
             game.getAllowedActions().add(AllowedAction.PLAY_CARD_FROM_HAND);
@@ -243,7 +287,7 @@ public class OnirimServiceImpl implements IOnirimService {
         if (!cardWithKeySymbolAndSameColorFound) {
             game.getBoard().getLimboStack().add(game.getBoard().getPlayerHand().remove(game.getBoard().getPlayerHand().size() - 1));
         }
-        labyrinthCardDrawnAction(game);
+        checkPlayerHandSizeAndSetAllowedActions(game);
     }
 
     private void nightmareCardDrawnAction(Game game) {
@@ -257,7 +301,7 @@ public class OnirimServiceImpl implements IOnirimService {
             }
         }
         if (!game.getBoard().getDiscoveredDoors().isEmpty()) {
-            game.getAllowedActions().add(AllowedAction.LOOSE_DOOR_CARD);
+            game.getAllowedActions().add(AllowedAction.LOSE_DOOR_CARD);
         }
         if (!game.getBoard().getCardDeck().isEmpty()) {
             game.getAllowedActions().add(AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
@@ -272,6 +316,11 @@ public class OnirimServiceImpl implements IOnirimService {
 
     private boolean validatePlayedCardIndex(Game game, Integer playedCardIndex) {
         game.setMessageToDisplay(playedCardIndex > -1 && playedCardIndex < 5 ? "" : "Selected card is not in hand.");
+        return game.getMessageToDisplay().isEmpty();
+    }
+
+    private boolean validateDiscardedDoorIndex(Game game, Integer doorCardIndex) {
+        game.setMessageToDisplay(doorCardIndex > -1 && doorCardIndex < game.getBoard().getDiscoveredDoors().size() ? "" : "Selected door is not discovered.");
         return game.getMessageToDisplay().isEmpty();
     }
 
@@ -309,6 +358,16 @@ public class OnirimServiceImpl implements IOnirimService {
 
     private boolean validateCardDeckNotEmpty(Game game) {
         game.setMessageToDisplay(game.getBoard().getCardDeck().isEmpty() ? "Game Over." : "");
+        return game.getMessageToDisplay().isEmpty();
+    }
+
+    private boolean validateDiscardedCardIsKeyCard(Game game, Integer discardedCardIndex) {
+        if (game.getBoard().getPlayerHand().get(discardedCardIndex) instanceof LabyrinthCard discardedLabyrinthCard
+            && discardedLabyrinthCard.getSymbol().equals(Symbol.KEY)) {
+            game.setMessageToDisplay("");
+        } else {
+            game.setMessageToDisplay("Selected card is not a KEY card.");
+        }
         return game.getMessageToDisplay().isEmpty();
     }
 

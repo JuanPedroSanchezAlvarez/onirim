@@ -159,7 +159,12 @@ public class OnirimServiceImpl implements IOnirimService {
     public Game discardPlayerHand(Game game) {
         // We check that the action is allowed.
         if (!validateAllowedAction(game, AllowedAction.DISCARD_PLAYER_HAND)) { return game; }
-        // TODO
+        // We discard the entire player hand.
+        while (!game.getBoard().getPlayerHand().isEmpty()) {
+            game.getBoard().getDiscardedCards().add(game.getBoard().getPlayerHand().remove(game.getBoard().getPlayerHand().size() - 1));
+        }
+        // We draw a new set of five cards.
+        initializePlayerHand(game);
         // We set the next allowed actions.
         checkPlayerHandSizeAndSetAllowedActions(game);
         return game;
@@ -319,7 +324,12 @@ public class OnirimServiceImpl implements IOnirimService {
         if (!game.getBoard().getCardDeck().isEmpty()) {
             game.getAllowedActions().add(AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
         }
-        game.getAllowedActions().add(AllowedAction.DISCARD_PLAYER_HAND);
+        if (game.getBoard().getCardDeck().size() >= 5) {
+            game.getAllowedActions().add(AllowedAction.DISCARD_PLAYER_HAND);
+        }
+        if (game.getAllowedActions().isEmpty()) {
+            game.setMessageToDisplay("Game Over.");
+        }
     }
 
     private boolean validateAllowedAction(Game game, AllowedAction allowedAction) {

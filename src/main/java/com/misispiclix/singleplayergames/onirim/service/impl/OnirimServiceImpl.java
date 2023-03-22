@@ -282,6 +282,7 @@ public class OnirimServiceImpl implements IOnirimService {
         if (game.getBoard().getPlayerHand().size() >= 5) {
             game.getAllowedActions().add(AllowedAction.PLAY_CARD_FROM_HAND);
             game.getAllowedActions().add(AllowedAction.DISCARD_CARD_FROM_HAND);
+            shuffleCardDeck(game);
         } else {
             game.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
         }

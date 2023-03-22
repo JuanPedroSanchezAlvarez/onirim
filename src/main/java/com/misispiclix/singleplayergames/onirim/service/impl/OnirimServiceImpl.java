@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class OnirimServiceImpl implements IOnirimService {
@@ -44,6 +43,8 @@ public class OnirimServiceImpl implements IOnirimService {
             // We look for a door card of that same color and play it.
             discoverDoor(game);
         }
+        // We check if all the door cards have been discovered.
+        if (validateAllDoorsDiscovered(game)) { return game; }
         // We must draw a card.
         game.getAllowedActions().clear();
         game.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
@@ -106,6 +107,8 @@ public class OnirimServiceImpl implements IOnirimService {
         drawCard(game);
         // We check the type of card that has been drawn and act accordingly.
         checkTypeOfCardDrawn(game);
+        // We check if all the door cards have been discovered.
+        validateAllDoorsDiscovered(game);
         return game;
     }
 
@@ -329,7 +332,7 @@ public class OnirimServiceImpl implements IOnirimService {
             game.getAllowedActions().add(AllowedAction.DISCARD_PLAYER_HAND);
         }
         if (game.getAllowedActions().isEmpty()) {
-            game.setMessageToDisplay("Game Over.");
+            game.setMessageToDisplay("Game Over. YOU LOSE.");
         }
     }
 
@@ -381,7 +384,7 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private boolean validateCardDeckNotEmpty(Game game) {
-        game.setMessageToDisplay(game.getBoard().getCardDeck().isEmpty() ? "Game Over." : "");
+        game.setMessageToDisplay(game.getBoard().getCardDeck().isEmpty() ? "Game Over. YOU LOSE." : "");
         return game.getMessageToDisplay().isEmpty();
     }
 
@@ -393,6 +396,11 @@ public class OnirimServiceImpl implements IOnirimService {
             game.setMessageToDisplay("Selected card is not a KEY card.");
         }
         return game.getMessageToDisplay().isEmpty();
+    }
+
+    private boolean validateAllDoorsDiscovered(Game game) {
+        game.setMessageToDisplay(game.getBoard().getDiscoveredDoors().size() == 8 ? "Game Over. YOU WIN." : "");
+        return !game.getMessageToDisplay().isEmpty();
     }
 
 }

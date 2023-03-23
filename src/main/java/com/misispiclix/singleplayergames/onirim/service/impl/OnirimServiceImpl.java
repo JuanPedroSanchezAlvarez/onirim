@@ -23,8 +23,7 @@ public class OnirimServiceImpl implements IOnirimService {
         Game game = new Game();
         initializeCardDeck(game);
         initializePlayerHand(game);
-        game.getAllowedActions().add(AllowedAction.PLAY_CARD_FROM_HAND);
-        game.getAllowedActions().add(AllowedAction.DISCARD_CARD_FROM_HAND);
+        checkPlayerHandSizeAndSetAllowedActions(game);
         return game;
     }
 
@@ -61,7 +60,8 @@ public class OnirimServiceImpl implements IOnirimService {
         discardCard(game, discardedCardIndex);
         // We check that the discarded card has the key symbol.
         game.getAllowedActions().clear();
-        if (validateDiscardedCardHasKeySymbol(game.getBoard().getDiscardedCards()) && !game.getBoard().getCardDeck().isEmpty()) {
+        if (validateDiscardedCardHasKeySymbol(game.getBoard().getDiscardedCards().get(game.getBoard().getDiscardedCards().size() - 1))
+                && !game.getBoard().getCardDeck().isEmpty()) {
             // We must activate a prophecy.
             game.getAllowedActions().add(AllowedAction.ACTIVATE_PROPHECY);
         } else {
@@ -119,7 +119,7 @@ public class OnirimServiceImpl implements IOnirimService {
         // We check that the chosen card exists in the hand.
         if (!validatePlayedCardIndex(game, discardedCardIndex)) { return game; }
         // We check that the chosen card is a key card.
-        if (!validateDiscardedCardIsKeyCard(game, discardedCardIndex)) { return game; }
+        if (!validateChosenCardIsKeyCard(game, discardedCardIndex)) { return game; }
         // We discard the chosen key card from hand.
         game.getBoard().getDiscardedCards().add(game.getBoard().getPlayerHand().remove(discardedCardIndex.intValue()));
         // We set the next allowed actions.
@@ -202,25 +202,20 @@ public class OnirimServiceImpl implements IOnirimService {
 
     private void initializePlayerHand(Game game) {
         while (game.getBoard().getPlayerHand().size() < 5) {
-            Card card = game.getBoard().getCardDeck().get(game.getBoard().getCardDeck().size() - 1);
-            game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1);
-            if (card instanceof LabyrinthCard) {
-                game.getBoard().getPlayerHand().add(card);
+            if (game.getBoard().getCardDeck().get(game.getBoard().getCardDeck().size() - 1) instanceof LabyrinthCard) {
+                game.getBoard().getPlayerHand().add(game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1));
             } else {
-                game.getBoard().getLimboStack().add(card);
+                game.getBoard().getLimboStack().add(game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1));
             }
         }
-        shuffleCardDeck(game);
     }
 
     private void playCard(Game game, Integer playedCardIndex) {
-        game.getBoard().getPlayedCards().add((LabyrinthCard) game.getBoard().getPlayerHand().get(playedCardIndex));
-        game.getBoard().getPlayerHand().remove(playedCardIndex.intValue());
+        game.getBoard().getPlayedCards().add((LabyrinthCard) game.getBoard().getPlayerHand().remove(playedCardIndex.intValue()));
     }
 
     private void discardCard(Game game, Integer discardedCardIndex) {
-        game.getBoard().getDiscardedCards().add(game.getBoard().getPlayerHand().get(discardedCardIndex));
-        game.getBoard().getPlayerHand().remove(discardedCardIndex.intValue());
+        game.getBoard().getDiscardedCards().add(game.getBoard().getPlayerHand().remove(discardedCardIndex.intValue()));
     }
 
     private void drawCard(Game game) {
@@ -228,19 +223,13 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private void discoverDoor(Game game) {
-        Card doorCardFound = null;
-        for (Card card : game.getBoard().getCardDeck()) {
-            if (card instanceof DoorCard) {
-                DoorCard doorCard = (DoorCard) card;
-                if (doorCard.getColor().equals(game.getBoard().getPlayedCards().get(game.getBoard().getCardDeck().size() - 1).getColor())) {
-                    game.getBoard().getDiscoveredDoors().add(doorCard);
-                    doorCardFound = card;
+        for (int i = 0; i < game.getBoard().getCardDeck().size(); i++) {
+            if (game.getBoard().getCardDeck().get(i) instanceof DoorCard doorCard) {
+                if (doorCard.getColor().equals(game.getBoard().getPlayedCards().get(game.getBoard().getPlayedCards().size() - 1).getColor())) {
+                    game.getBoard().getDiscoveredDoors().add((DoorCard) game.getBoard().getCardDeck().remove(i));
                     break;
                 }
             }
-        }
-        if (null != doorCardFound) {
-            game.getBoard().getCardDeck().remove(doorCardFound);
         }
         shuffleCardDeck(game);
     }
@@ -248,8 +237,7 @@ public class OnirimServiceImpl implements IOnirimService {
     private void showProphecyCards(Game game) {
         int numberOfCardsToShow = Math.min(game.getBoard().getCardDeck().size(), 5);
         for (int i = 0; i < numberOfCardsToShow; i++) {
-            game.getBoard().getCardsToShow().add(game.getBoard().getCardDeck().get(game.getBoard().getCardDeck().size() - 1));
-            game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1);
+            game.getBoard().getCardsToShow().add(game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1));
         }
     }
 
@@ -265,18 +253,16 @@ public class OnirimServiceImpl implements IOnirimService {
             }
         }
         while (!reorderedCardList.isEmpty()) {
-            game.getBoard().getCardDeck().add(reorderedCardList.get(reorderedCardList.size() - 1));
-            reorderedCardList.remove(reorderedCardList.size() - 1);
+            game.getBoard().getCardDeck().add(reorderedCardList.remove(reorderedCardList.size() - 1));
         }
         game.getBoard().getCardsToShow().clear();
     }
 
     private void checkTypeOfCardDrawn(Game game) {
         switch (game.getBoard().getPlayerHand().get(game.getBoard().getPlayerHand().size() - 1)) {
-            case LabyrinthCard labyrinthCard -> { checkPlayerHandSizeAndSetAllowedActions(game); }
             case DoorCard doorCard -> { doorCardDrawnAction(game, doorCard); }
-            case NightmareCard nightmareCard -> { nightmareCardDrawnAction(game); }
-            default -> { game.setMessageToDisplay("ERROR: Card type not found."); }
+            case NightmareCard ignored -> { nightmareCardDrawnAction(game); }
+            default -> { checkPlayerHandSizeAndSetAllowedActions(game); }
         };
     }
 
@@ -315,11 +301,9 @@ public class OnirimServiceImpl implements IOnirimService {
     private void nightmareCardDrawnAction(Game game) {
         game.getAllowedActions().clear();
         for (Card card : game.getBoard().getPlayerHand()) {
-            if (card instanceof LabyrinthCard labyrinthCard) {
-                if (labyrinthCard.getSymbol().equals(Symbol.KEY)) {
-                    game.getAllowedActions().add(AllowedAction.DISCARD_KEY_CARD_FROM_HAND);
-                    break;
-                }
+            if (card instanceof LabyrinthCard labyrinthCard && labyrinthCard.getSymbol().equals(Symbol.KEY)) {
+                game.getAllowedActions().add(AllowedAction.DISCARD_KEY_CARD_FROM_HAND);
+                break;
             }
         }
         if (!game.getBoard().getDiscoveredDoors().isEmpty()) {
@@ -327,9 +311,9 @@ public class OnirimServiceImpl implements IOnirimService {
         }
         if (!game.getBoard().getCardDeck().isEmpty()) {
             game.getAllowedActions().add(AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
-        }
-        if (game.getBoard().getCardDeck().size() >= 5) {
-            game.getAllowedActions().add(AllowedAction.DISCARD_PLAYER_HAND);
+            if (game.getBoard().getCardDeck().size() >= 5) {
+                game.getAllowedActions().add(AllowedAction.DISCARD_PLAYER_HAND);
+            }
         }
         if (game.getAllowedActions().isEmpty()) {
             game.setMessageToDisplay("Game Over. YOU LOSE.");
@@ -342,7 +326,7 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private boolean validatePlayedCardIndex(Game game, Integer playedCardIndex) {
-        game.setMessageToDisplay(playedCardIndex > -1 && playedCardIndex < 5 ? "" : "Selected card is not in hand.");
+        game.setMessageToDisplay(playedCardIndex > -1 && playedCardIndex < game.getBoard().getPlayerHand().size() ? "" : "Selected card is not in hand.");
         return game.getMessageToDisplay().isEmpty();
     }
 
@@ -353,8 +337,7 @@ public class OnirimServiceImpl implements IOnirimService {
 
     private boolean validateDifferentSymbol(Game game, Integer playedCardIndex) {
         if (game.getBoard().getPlayedCards().isEmpty()) { return true; }
-        if (game.getBoard().getPlayerHand().get(playedCardIndex) instanceof LabyrinthCard) {
-            LabyrinthCard selectedCard = (LabyrinthCard) game.getBoard().getPlayerHand().get(playedCardIndex);
+        if (game.getBoard().getPlayerHand().get(playedCardIndex) instanceof LabyrinthCard selectedCard) {
             LabyrinthCard lastCardPlayed = game.getBoard().getPlayedCards().get(game.getBoard().getPlayedCards().size() -1);
             game.setMessageToDisplay(selectedCard.getSymbol().equals(lastCardPlayed.getSymbol()) ? "The chosen card must have a different symbol than the last card played." : "");
         } else {
@@ -375,12 +358,8 @@ public class OnirimServiceImpl implements IOnirimService {
         return lastThreeCardsOfTheSameColor && !fourthCardOfTheSameColor;
     }
 
-    private boolean validateDiscardedCardHasKeySymbol(List<Card> discardedCards) {
-        Card discardedCard = discardedCards.get(discardedCards.size() -1);
-        if (discardedCard instanceof LabyrinthCard discardedLabyrinthCard) {
-            return discardedLabyrinthCard.getSymbol().equals(Symbol.KEY);
-        }
-        return false;
+    private boolean validateDiscardedCardHasKeySymbol(Card discardedCard) {
+        return discardedCard instanceof LabyrinthCard discardedLabyrinthCard && discardedLabyrinthCard.getSymbol().equals(Symbol.KEY);
     }
 
     private boolean validateCardDeckNotEmpty(Game game) {
@@ -388,9 +367,9 @@ public class OnirimServiceImpl implements IOnirimService {
         return game.getMessageToDisplay().isEmpty();
     }
 
-    private boolean validateDiscardedCardIsKeyCard(Game game, Integer discardedCardIndex) {
+    private boolean validateChosenCardIsKeyCard(Game game, Integer discardedCardIndex) {
         if (game.getBoard().getPlayerHand().get(discardedCardIndex) instanceof LabyrinthCard discardedLabyrinthCard
-            && discardedLabyrinthCard.getSymbol().equals(Symbol.KEY)) {
+                && discardedLabyrinthCard.getSymbol().equals(Symbol.KEY)) {
             game.setMessageToDisplay("");
         } else {
             game.setMessageToDisplay("Selected card is not a KEY card.");

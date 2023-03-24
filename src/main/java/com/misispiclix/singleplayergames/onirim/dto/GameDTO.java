@@ -7,14 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class Game {
+public class GameDTO {
 
-    private Board board;
+    private BoardDTO boardDTO;
     private List<AllowedAction> allowedActions;
     private String messageToDisplay;
 
-    public Game() {
-        this.board = new Board();
+    public GameDTO() {
+        this.boardDTO = new BoardDTO();
         this.allowedActions = new ArrayList<>();
         this.messageToDisplay = "";
     }

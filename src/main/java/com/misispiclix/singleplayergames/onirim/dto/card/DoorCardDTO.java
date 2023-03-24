@@ -4,11 +4,11 @@ import com.misispiclix.singleplayergames.onirim.enums.Color;
 import lombok.Data;
 
 @Data
-public class DoorCard extends Card {
+public class DoorCardDTO extends CardDTO {
 
     private Color color;
 
-    public DoorCard(Color color) {
+    public DoorCardDTO(Color color) {
         this.color = color;
     }
 

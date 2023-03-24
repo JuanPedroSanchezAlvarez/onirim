@@ -1,10 +1,10 @@
 package com.misispiclix.singleplayergames.onirim.service.impl;
 
-import com.misispiclix.singleplayergames.onirim.dto.Game;
-import com.misispiclix.singleplayergames.onirim.dto.card.Card;
-import com.misispiclix.singleplayergames.onirim.dto.card.DoorCard;
-import com.misispiclix.singleplayergames.onirim.dto.card.LabyrinthCard;
-import com.misispiclix.singleplayergames.onirim.dto.card.NightmareCard;
+import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
+import com.misispiclix.singleplayergames.onirim.dto.card.CardDTO;
+import com.misispiclix.singleplayergames.onirim.dto.card.DoorCardDTO;
+import com.misispiclix.singleplayergames.onirim.dto.card.LabyrinthCardDTO;
+import com.misispiclix.singleplayergames.onirim.dto.card.NightmareCardDTO;
 import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
 import com.misispiclix.singleplayergames.onirim.enums.Color;
 import com.misispiclix.singleplayergames.onirim.enums.Symbol;
@@ -19,367 +19,367 @@ import java.util.List;
 public class OnirimServiceImpl implements IOnirimService {
 
     @Override
-    public Game createNewGame() {
-        Game game = new Game();
-        initializeCardDeck(game);
-        initializePlayerHand(game);
-        checkPlayerHandSizeAndSetAllowedActions(game);
-        return game;
+    public GameDTO createNewGame() {
+        GameDTO gameDTO = new GameDTO();
+        initializeCardDeck(gameDTO);
+        initializePlayerHand(gameDTO);
+        checkPlayerHandSizeAndSetAllowedActions(gameDTO);
+        return gameDTO;
     }
 
     @Override
-    public Game playCardFromHand(Game game, Integer playedCardIndex) {
+    public GameDTO playCardFromHand(GameDTO gameDTO, Integer playedCardIndex) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(game, AllowedAction.PLAY_CARD_FROM_HAND)) { return game; }
+        if (!validateAllowedAction(gameDTO, AllowedAction.PLAY_CARD_FROM_HAND)) { return gameDTO; }
         // We check that the chosen card exists in the hand.
-        if (!validatePlayedCardIndex(game, playedCardIndex)) { return game; }
+        if (!validatePlayedCardIndex(gameDTO, playedCardIndex)) { return gameDTO; }
         // We check that the chosen card has a different symbol than the last played.
-        if (!validateDifferentSymbol(game, playedCardIndex)) { return game; }
+        if (!validateDifferentSymbol(gameDTO, playedCardIndex)) { return gameDTO; }
         // We play the chosen card.
-        playCard(game, playedCardIndex);
+        playCard(gameDTO, playedCardIndex);
         // We check that the card just played is the third consecutive card of the same color.
-        if (validateThirdConsecutiveCardOfTheSameColor(game.getBoard().getPlayedCards())) {
+        if (validateThirdConsecutiveCardOfTheSameColor(gameDTO.getBoardDTO().getPlayedCards())) {
             // We look for a door card of that same color and play it.
-            discoverDoor(game);
+            discoverDoor(gameDTO);
         }
         // We check if all the door cards have been discovered.
-        if (validateAllDoorsDiscovered(game)) { return game; }
+        if (validateAllDoorsDiscovered(gameDTO)) { return gameDTO; }
         // We must draw a card.
-        game.getAllowedActions().clear();
-        game.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
-        return game;
+        gameDTO.getAllowedActions().clear();
+        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        return gameDTO;
     }
 
     @Override
-    public Game discardCardFromHand(Game game, Integer discardedCardIndex) {
+    public GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(game, AllowedAction.DISCARD_CARD_FROM_HAND)) { return game; }
+        if (!validateAllowedAction(gameDTO, AllowedAction.DISCARD_CARD_FROM_HAND)) { return gameDTO; }
         // We check that the chosen card exists in the hand.
-        if (!validatePlayedCardIndex(game, discardedCardIndex)) { return game; }
+        if (!validatePlayedCardIndex(gameDTO, discardedCardIndex)) { return gameDTO; }
         // We discard the chosen card.
-        discardCard(game, discardedCardIndex);
+        discardCard(gameDTO, discardedCardIndex);
         // We check that the discarded card has the key symbol.
-        game.getAllowedActions().clear();
-        if (validateDiscardedCardHasKeySymbol(game.getBoard().getDiscardedCards().get(game.getBoard().getDiscardedCards().size() - 1))
-                && !game.getBoard().getCardDeck().isEmpty()) {
+        gameDTO.getAllowedActions().clear();
+        if (validateDiscardedCardHasKeySymbol(gameDTO.getBoardDTO().getDiscardedCardDTOS().get(gameDTO.getBoardDTO().getDiscardedCardDTOS().size() - 1))
+                && !gameDTO.getBoardDTO().getCardDTODeck().isEmpty()) {
             // We must activate a prophecy.
-            game.getAllowedActions().add(AllowedAction.ACTIVATE_PROPHECY);
+            gameDTO.getAllowedActions().add(AllowedAction.ACTIVATE_PROPHECY);
         } else {
             // We must draw a card.
-            game.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+            gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
         }
-        return game;
+        return gameDTO;
     }
 
     @Override
-    public Game activateProphecy(Game game) {
+    public GameDTO activateProphecy(GameDTO gameDTO) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(game, AllowedAction.ACTIVATE_PROPHECY)) { return game; }
+        if (!validateAllowedAction(gameDTO, AllowedAction.ACTIVATE_PROPHECY)) { return gameDTO; }
         // We show the prophecy cards.
-        showProphecyCards(game);
+        showProphecyCards(gameDTO);
         // We must confirm the prophecy.
-        game.getAllowedActions().clear();
-        game.getAllowedActions().add(AllowedAction.CONFIRM_PROPHECY);
-        return game;
+        gameDTO.getAllowedActions().clear();
+        gameDTO.getAllowedActions().add(AllowedAction.CONFIRM_PROPHECY);
+        return gameDTO;
     }
 
     @Override
-    public Game confirmProphecy(Game game, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
+    public GameDTO confirmProphecy(GameDTO gameDTO, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(game, AllowedAction.CONFIRM_PROPHECY)) { return game; }
+        if (!validateAllowedAction(gameDTO, AllowedAction.CONFIRM_PROPHECY)) { return gameDTO; }
         // We discard the chosen card.
-        game.getBoard().getDiscardedCards().add(game.getBoard().getCardsToShow().get(discardedCardIndex));
+        gameDTO.getBoardDTO().getDiscardedCardDTOS().add(gameDTO.getBoardDTO().getCardsToShow().get(discardedCardIndex));
         // We rearrange the top cards of the main deck in the chosen order.
-        rearrangeTopCardsOfTheCardDeck(game, reorderedCardIndexes);
+        rearrangeTopCardsOfTheCardDeck(gameDTO, reorderedCardIndexes);
         // We must draw a card.
-        game.getAllowedActions().clear();
-        game.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
-        return game;
+        gameDTO.getAllowedActions().clear();
+        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        return gameDTO;
     }
 
     @Override
-    public Game drawCardFromDeck(Game game) {
+    public GameDTO drawCardFromDeck(GameDTO gameDTO) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(game, AllowedAction.DRAW_CARD_FROM_DECK)) { return game; }
+        if (!validateAllowedAction(gameDTO, AllowedAction.DRAW_CARD_FROM_DECK)) { return gameDTO; }
         // We check that the main deck is not empty.
-        if (!validateCardDeckNotEmpty(game)) { return game; }
+        if (!validateCardDeckNotEmpty(gameDTO)) { return gameDTO; }
         // We draw a card from the main deck.
-        drawCard(game);
+        drawCard(gameDTO);
         // We check the type of card that has been drawn and act accordingly.
-        checkTypeOfCardDrawn(game);
+        checkTypeOfCardDrawn(gameDTO);
         // We check if all the door cards have been discovered.
-        validateAllDoorsDiscovered(game);
-        return game;
+        validateAllDoorsDiscovered(gameDTO);
+        return gameDTO;
     }
 
     @Override
-    public Game discardKeyCardFromHand(Game game, Integer discardedCardIndex) {
+    public GameDTO discardKeyCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(game, AllowedAction.DISCARD_KEY_CARD_FROM_HAND)) { return game; }
+        if (!validateAllowedAction(gameDTO, AllowedAction.DISCARD_KEY_CARD_FROM_HAND)) { return gameDTO; }
         // We check that the chosen card exists in the hand.
-        if (!validatePlayedCardIndex(game, discardedCardIndex)) { return game; }
+        if (!validatePlayedCardIndex(gameDTO, discardedCardIndex)) { return gameDTO; }
         // We check that the chosen card is a key card.
-        if (!validateChosenCardIsKeyCard(game, discardedCardIndex)) { return game; }
+        if (!validateChosenCardIsKeyCard(gameDTO, discardedCardIndex)) { return gameDTO; }
         // We discard the chosen key card from hand.
-        game.getBoard().getDiscardedCards().add(game.getBoard().getPlayerHand().remove(discardedCardIndex.intValue()));
+        gameDTO.getBoardDTO().getDiscardedCardDTOS().add(gameDTO.getBoardDTO().getPlayerHand().remove(discardedCardIndex.intValue()));
         // We set the next allowed actions.
-        checkPlayerHandSizeAndSetAllowedActions(game);
-        return game;
+        checkPlayerHandSizeAndSetAllowedActions(gameDTO);
+        return gameDTO;
     }
 
     @Override
-    public Game loseDoorCard(Game game, Integer doorCardIndex) {
+    public GameDTO loseDoorCard(GameDTO gameDTO, Integer doorCardIndex) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(game, AllowedAction.LOSE_DOOR_CARD)) { return game; }
+        if (!validateAllowedAction(gameDTO, AllowedAction.LOSE_DOOR_CARD)) { return gameDTO; }
         // We check that the chosen door card exists in the discovered doors zone.
-        if (!validateDiscardedDoorIndex(game, doorCardIndex)) { return game; }
+        if (!validateDiscardedDoorIndex(gameDTO, doorCardIndex)) { return gameDTO; }
         // We move the chosen door card to the limbo stack.
-        game.getBoard().getLimboStack().add(game.getBoard().getDiscoveredDoors().remove(doorCardIndex.intValue()));
+        gameDTO.getBoardDTO().getLimboStack().add(gameDTO.getBoardDTO().getDiscoveredDoors().remove(doorCardIndex.intValue()));
         // We set the next allowed actions.
-        checkPlayerHandSizeAndSetAllowedActions(game);
-        return game;
+        checkPlayerHandSizeAndSetAllowedActions(gameDTO);
+        return gameDTO;
     }
 
     @Override
-    public Game discardTopCardsFromDeck(Game game) {
+    public GameDTO discardTopCardsFromDeck(GameDTO gameDTO) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(game, AllowedAction.DISCARD_TOP_CARDS_FROM_DECK)) { return game; }
+        if (!validateAllowedAction(gameDTO, AllowedAction.DISCARD_TOP_CARDS_FROM_DECK)) { return gameDTO; }
         // We discard the top cards from the main deck.
-        int numberOfCardsToDiscard = Math.min(game.getBoard().getCardDeck().size(), 5);
+        int numberOfCardsToDiscard = Math.min(gameDTO.getBoardDTO().getCardDTODeck().size(), 5);
         for (int i = 0; i < numberOfCardsToDiscard; i++) {
-            if (game.getBoard().getCardDeck().get(game.getBoard().getCardDeck().size() - 1) instanceof LabyrinthCard) {
-                game.getBoard().getDiscardedCards().add(game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1));
+            if (gameDTO.getBoardDTO().getCardDTODeck().get(gameDTO.getBoardDTO().getCardDTODeck().size() - 1) instanceof LabyrinthCardDTO) {
+                gameDTO.getBoardDTO().getDiscardedCardDTOS().add(gameDTO.getBoardDTO().getCardDTODeck().remove(gameDTO.getBoardDTO().getCardDTODeck().size() - 1));
             } else {
-                game.getBoard().getLimboStack().add(game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1));
+                gameDTO.getBoardDTO().getLimboStack().add(gameDTO.getBoardDTO().getCardDTODeck().remove(gameDTO.getBoardDTO().getCardDTODeck().size() - 1));
             }
         }
         // We set the next allowed actions.
-        checkPlayerHandSizeAndSetAllowedActions(game);
-        return game;
+        checkPlayerHandSizeAndSetAllowedActions(gameDTO);
+        return gameDTO;
     }
 
     @Override
-    public Game discardPlayerHand(Game game) {
+    public GameDTO discardPlayerHand(GameDTO gameDTO) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(game, AllowedAction.DISCARD_PLAYER_HAND)) { return game; }
+        if (!validateAllowedAction(gameDTO, AllowedAction.DISCARD_PLAYER_HAND)) { return gameDTO; }
         // We discard the entire player hand.
-        while (!game.getBoard().getPlayerHand().isEmpty()) {
-            game.getBoard().getDiscardedCards().add(game.getBoard().getPlayerHand().remove(game.getBoard().getPlayerHand().size() - 1));
+        while (!gameDTO.getBoardDTO().getPlayerHand().isEmpty()) {
+            gameDTO.getBoardDTO().getDiscardedCardDTOS().add(gameDTO.getBoardDTO().getPlayerHand().remove(gameDTO.getBoardDTO().getPlayerHand().size() - 1));
         }
         // We draw a new set of five cards.
-        initializePlayerHand(game);
+        initializePlayerHand(gameDTO);
         // We set the next allowed actions.
-        checkPlayerHandSizeAndSetAllowedActions(game);
-        return game;
+        checkPlayerHandSizeAndSetAllowedActions(gameDTO);
+        return gameDTO;
     }
 
-    private void initializeCardDeck(Game game) {
-        for (int i = 0; i < 10; i++) { game.getBoard().getCardDeck().add(new NightmareCard()); }
-        for (int i = 0; i < 3; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.RED, Symbol.KEY)); }
-        for (int i = 0; i < 4; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.RED, Symbol.MOON)); }
-        for (int i = 0; i < 9; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.RED, Symbol.SUN)); }
-        for (int i = 0; i < 3; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.GREEN, Symbol.KEY)); }
-        for (int i = 0; i < 4; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.GREEN, Symbol.MOON)); }
-        for (int i = 0; i < 7; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.GREEN, Symbol.SUN)); }
-        for (int i = 0; i < 3; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.BLUE, Symbol.KEY)); }
-        for (int i = 0; i < 4; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.BLUE, Symbol.MOON)); }
-        for (int i = 0; i < 8; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.BLUE, Symbol.SUN)); }
-        for (int i = 0; i < 3; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.YELLOW, Symbol.KEY)); }
-        for (int i = 0; i < 4; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.YELLOW, Symbol.MOON)); }
-        for (int i = 0; i < 6; i++) { game.getBoard().getCardDeck().add(new LabyrinthCard(Color.YELLOW, Symbol.SUN)); }
-        for (int i = 0; i < 2; i++) { game.getBoard().getCardDeck().add(new DoorCard(Color.RED)); }
-        for (int i = 0; i < 2; i++) { game.getBoard().getCardDeck().add(new DoorCard(Color.GREEN)); }
-        for (int i = 0; i < 2; i++) { game.getBoard().getCardDeck().add(new DoorCard(Color.BLUE)); }
-        for (int i = 0; i < 2; i++) { game.getBoard().getCardDeck().add(new DoorCard(Color.YELLOW)); }
-        shuffleCardDeck(game);
+    private void initializeCardDeck(GameDTO gameDTO) {
+        for (int i = 0; i < 10; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new NightmareCardDTO()); }
+        for (int i = 0; i < 3; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.RED, Symbol.KEY)); }
+        for (int i = 0; i < 4; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.RED, Symbol.MOON)); }
+        for (int i = 0; i < 9; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN)); }
+        for (int i = 0; i < 3; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.GREEN, Symbol.KEY)); }
+        for (int i = 0; i < 4; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.GREEN, Symbol.MOON)); }
+        for (int i = 0; i < 7; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.GREEN, Symbol.SUN)); }
+        for (int i = 0; i < 3; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY)); }
+        for (int i = 0; i < 4; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.MOON)); }
+        for (int i = 0; i < 8; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.SUN)); }
+        for (int i = 0; i < 3; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.KEY)); }
+        for (int i = 0; i < 4; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.MOON)); }
+        for (int i = 0; i < 6; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.SUN)); }
+        for (int i = 0; i < 2; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new DoorCardDTO(Color.RED)); }
+        for (int i = 0; i < 2; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new DoorCardDTO(Color.GREEN)); }
+        for (int i = 0; i < 2; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new DoorCardDTO(Color.BLUE)); }
+        for (int i = 0; i < 2; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new DoorCardDTO(Color.YELLOW)); }
+        shuffleCardDeck(gameDTO);
     }
 
-    private void shuffleCardDeck(Game game) {
-        game.getBoard().getLimboStack().forEach(card -> { game.getBoard().getCardDeck().add(card); });
-        game.getBoard().getLimboStack().clear();
-        Collections.shuffle(game.getBoard().getCardDeck());
+    private void shuffleCardDeck(GameDTO gameDTO) {
+        gameDTO.getBoardDTO().getLimboStack().forEach(card -> { gameDTO.getBoardDTO().getCardDTODeck().add(card); });
+        gameDTO.getBoardDTO().getLimboStack().clear();
+        Collections.shuffle(gameDTO.getBoardDTO().getCardDTODeck());
     }
 
-    private void initializePlayerHand(Game game) {
-        while (game.getBoard().getPlayerHand().size() < 5) {
-            if (game.getBoard().getCardDeck().get(game.getBoard().getCardDeck().size() - 1) instanceof LabyrinthCard) {
-                game.getBoard().getPlayerHand().add(game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1));
+    private void initializePlayerHand(GameDTO gameDTO) {
+        while (gameDTO.getBoardDTO().getPlayerHand().size() < 5) {
+            if (gameDTO.getBoardDTO().getCardDTODeck().get(gameDTO.getBoardDTO().getCardDTODeck().size() - 1) instanceof LabyrinthCardDTO) {
+                gameDTO.getBoardDTO().getPlayerHand().add(gameDTO.getBoardDTO().getCardDTODeck().remove(gameDTO.getBoardDTO().getCardDTODeck().size() - 1));
             } else {
-                game.getBoard().getLimboStack().add(game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1));
+                gameDTO.getBoardDTO().getLimboStack().add(gameDTO.getBoardDTO().getCardDTODeck().remove(gameDTO.getBoardDTO().getCardDTODeck().size() - 1));
             }
         }
     }
 
-    private void playCard(Game game, Integer playedCardIndex) {
-        game.getBoard().getPlayedCards().add((LabyrinthCard) game.getBoard().getPlayerHand().remove(playedCardIndex.intValue()));
+    private void playCard(GameDTO gameDTO, Integer playedCardIndex) {
+        gameDTO.getBoardDTO().getPlayedCards().add((LabyrinthCardDTO) gameDTO.getBoardDTO().getPlayerHand().remove(playedCardIndex.intValue()));
     }
 
-    private void discardCard(Game game, Integer discardedCardIndex) {
-        game.getBoard().getDiscardedCards().add(game.getBoard().getPlayerHand().remove(discardedCardIndex.intValue()));
+    private void discardCard(GameDTO gameDTO, Integer discardedCardIndex) {
+        gameDTO.getBoardDTO().getDiscardedCardDTOS().add(gameDTO.getBoardDTO().getPlayerHand().remove(discardedCardIndex.intValue()));
     }
 
-    private void drawCard(Game game) {
-        game.getBoard().getPlayerHand().add(game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1));
+    private void drawCard(GameDTO gameDTO) {
+        gameDTO.getBoardDTO().getPlayerHand().add(gameDTO.getBoardDTO().getCardDTODeck().remove(gameDTO.getBoardDTO().getCardDTODeck().size() - 1));
     }
 
-    private void discoverDoor(Game game) {
-        for (int i = 0; i < game.getBoard().getCardDeck().size(); i++) {
-            if (game.getBoard().getCardDeck().get(i) instanceof DoorCard doorCard) {
-                if (doorCard.getColor().equals(game.getBoard().getPlayedCards().get(game.getBoard().getPlayedCards().size() - 1).getColor())) {
-                    game.getBoard().getDiscoveredDoors().add((DoorCard) game.getBoard().getCardDeck().remove(i));
+    private void discoverDoor(GameDTO gameDTO) {
+        for (int i = 0; i < gameDTO.getBoardDTO().getCardDTODeck().size(); i++) {
+            if (gameDTO.getBoardDTO().getCardDTODeck().get(i) instanceof DoorCardDTO doorCard) {
+                if (doorCard.getColor().equals(gameDTO.getBoardDTO().getPlayedCards().get(gameDTO.getBoardDTO().getPlayedCards().size() - 1).getColor())) {
+                    gameDTO.getBoardDTO().getDiscoveredDoors().add((DoorCardDTO) gameDTO.getBoardDTO().getCardDTODeck().remove(i));
                     break;
                 }
             }
         }
-        shuffleCardDeck(game);
+        shuffleCardDeck(gameDTO);
     }
 
-    private void showProphecyCards(Game game) {
-        int numberOfCardsToShow = Math.min(game.getBoard().getCardDeck().size(), 5);
+    private void showProphecyCards(GameDTO gameDTO) {
+        int numberOfCardsToShow = Math.min(gameDTO.getBoardDTO().getCardDTODeck().size(), 5);
         for (int i = 0; i < numberOfCardsToShow; i++) {
-            game.getBoard().getCardsToShow().add(game.getBoard().getCardDeck().remove(game.getBoard().getCardDeck().size() - 1));
+            gameDTO.getBoardDTO().getCardsToShow().add(gameDTO.getBoardDTO().getCardDTODeck().remove(gameDTO.getBoardDTO().getCardDTODeck().size() - 1));
         }
     }
 
-    private void rearrangeTopCardsOfTheCardDeck(Game game, List<Integer> reorderedCardIndexes) {
-        List<Card> reorderedCardList = new ArrayList<>();
+    private void rearrangeTopCardsOfTheCardDeck(GameDTO gameDTO, List<Integer> reorderedCardIndexes) {
+        List<CardDTO> reorderedCardListDTO = new ArrayList<>();
         for (int i = 0; i < reorderedCardIndexes.size(); i++) {
             int j = 0;
             for (Integer index : reorderedCardIndexes) {
                 if (i == index) {
-                    reorderedCardList.add(game.getBoard().getCardsToShow().get(j));
+                    reorderedCardListDTO.add(gameDTO.getBoardDTO().getCardsToShow().get(j));
                 }
                 j++;
             }
         }
-        while (!reorderedCardList.isEmpty()) {
-            game.getBoard().getCardDeck().add(reorderedCardList.remove(reorderedCardList.size() - 1));
+        while (!reorderedCardListDTO.isEmpty()) {
+            gameDTO.getBoardDTO().getCardDTODeck().add(reorderedCardListDTO.remove(reorderedCardListDTO.size() - 1));
         }
-        game.getBoard().getCardsToShow().clear();
+        gameDTO.getBoardDTO().getCardsToShow().clear();
     }
 
-    private void checkTypeOfCardDrawn(Game game) {
-        switch (game.getBoard().getPlayerHand().get(game.getBoard().getPlayerHand().size() - 1)) {
-            case DoorCard doorCard -> { doorCardDrawnAction(game, doorCard); }
-            case NightmareCard ignored -> { nightmareCardDrawnAction(game); }
-            default -> { checkPlayerHandSizeAndSetAllowedActions(game); }
+    private void checkTypeOfCardDrawn(GameDTO gameDTO) {
+        switch (gameDTO.getBoardDTO().getPlayerHand().get(gameDTO.getBoardDTO().getPlayerHand().size() - 1)) {
+            case DoorCardDTO doorCard -> { doorCardDrawnAction(gameDTO, doorCard); }
+            case NightmareCardDTO ignored -> { nightmareCardDrawnAction(gameDTO); }
+            default -> { checkPlayerHandSizeAndSetAllowedActions(gameDTO); }
         };
     }
 
-    private void checkPlayerHandSizeAndSetAllowedActions(Game game) {
-        game.getAllowedActions().clear();
-        if (game.getBoard().getPlayerHand().size() >= 5) {
-            game.getAllowedActions().add(AllowedAction.PLAY_CARD_FROM_HAND);
-            game.getAllowedActions().add(AllowedAction.DISCARD_CARD_FROM_HAND);
-            shuffleCardDeck(game);
+    private void checkPlayerHandSizeAndSetAllowedActions(GameDTO gameDTO) {
+        gameDTO.getAllowedActions().clear();
+        if (gameDTO.getBoardDTO().getPlayerHand().size() >= 5) {
+            gameDTO.getAllowedActions().add(AllowedAction.PLAY_CARD_FROM_HAND);
+            gameDTO.getAllowedActions().add(AllowedAction.DISCARD_CARD_FROM_HAND);
+            shuffleCardDeck(gameDTO);
         } else {
-            game.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+            gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
         }
     }
 
-    private void doorCardDrawnAction(Game game, DoorCard doorCard) {
+    private void doorCardDrawnAction(GameDTO gameDTO, DoorCardDTO doorCard) {
         // We check if we have a labyrinth card in hand with the key symbol and the same color as the drawn door card.
         boolean cardWithKeySymbolAndSameColorFound = false;
-        for (int i = 0; i < game.getBoard().getPlayerHand().size(); i++) {
-            if (game.getBoard().getPlayerHand().get(i) instanceof LabyrinthCard labyrinthCard) {
+        for (int i = 0; i < gameDTO.getBoardDTO().getPlayerHand().size(); i++) {
+            if (gameDTO.getBoardDTO().getPlayerHand().get(i) instanceof LabyrinthCardDTO labyrinthCard) {
                 // If we have it, we discover the door and discard the key card.
                 if (labyrinthCard.getSymbol().equals(Symbol.KEY) && labyrinthCard.getColor().equals(doorCard.getColor())) {
                     cardWithKeySymbolAndSameColorFound = true;
-                    game.getBoard().getDiscoveredDoors().add((DoorCard) game.getBoard().getPlayerHand().remove(game.getBoard().getPlayerHand().size() - 1));
-                    game.getBoard().getDiscardedCards().add(game.getBoard().getPlayerHand().remove(i));
+                    gameDTO.getBoardDTO().getDiscoveredDoors().add((DoorCardDTO) gameDTO.getBoardDTO().getPlayerHand().remove(gameDTO.getBoardDTO().getPlayerHand().size() - 1));
+                    gameDTO.getBoardDTO().getDiscardedCardDTOS().add(gameDTO.getBoardDTO().getPlayerHand().remove(i));
                     break;
                 }
             }
         }
         // If we don't have it, we put the door card in the limbo stack.
         if (!cardWithKeySymbolAndSameColorFound) {
-            game.getBoard().getLimboStack().add(game.getBoard().getPlayerHand().remove(game.getBoard().getPlayerHand().size() - 1));
+            gameDTO.getBoardDTO().getLimboStack().add(gameDTO.getBoardDTO().getPlayerHand().remove(gameDTO.getBoardDTO().getPlayerHand().size() - 1));
         }
-        checkPlayerHandSizeAndSetAllowedActions(game);
+        checkPlayerHandSizeAndSetAllowedActions(gameDTO);
     }
 
-    private void nightmareCardDrawnAction(Game game) {
-        game.getAllowedActions().clear();
-        for (Card card : game.getBoard().getPlayerHand()) {
-            if (card instanceof LabyrinthCard labyrinthCard && labyrinthCard.getSymbol().equals(Symbol.KEY)) {
-                game.getAllowedActions().add(AllowedAction.DISCARD_KEY_CARD_FROM_HAND);
+    private void nightmareCardDrawnAction(GameDTO gameDTO) {
+        gameDTO.getAllowedActions().clear();
+        for (CardDTO cardDTO : gameDTO.getBoardDTO().getPlayerHand()) {
+            if (cardDTO instanceof LabyrinthCardDTO labyrinthCard && labyrinthCard.getSymbol().equals(Symbol.KEY)) {
+                gameDTO.getAllowedActions().add(AllowedAction.DISCARD_KEY_CARD_FROM_HAND);
                 break;
             }
         }
-        if (!game.getBoard().getDiscoveredDoors().isEmpty()) {
-            game.getAllowedActions().add(AllowedAction.LOSE_DOOR_CARD);
+        if (!gameDTO.getBoardDTO().getDiscoveredDoors().isEmpty()) {
+            gameDTO.getAllowedActions().add(AllowedAction.LOSE_DOOR_CARD);
         }
-        if (!game.getBoard().getCardDeck().isEmpty()) {
-            game.getAllowedActions().add(AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
-            if (game.getBoard().getCardDeck().size() >= 5) {
-                game.getAllowedActions().add(AllowedAction.DISCARD_PLAYER_HAND);
+        if (!gameDTO.getBoardDTO().getCardDTODeck().isEmpty()) {
+            gameDTO.getAllowedActions().add(AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
+            if (gameDTO.getBoardDTO().getCardDTODeck().size() >= 5) {
+                gameDTO.getAllowedActions().add(AllowedAction.DISCARD_PLAYER_HAND);
             }
         }
-        if (game.getAllowedActions().isEmpty()) {
-            game.setMessageToDisplay("Game Over. YOU LOSE.");
+        if (gameDTO.getAllowedActions().isEmpty()) {
+            gameDTO.setMessageToDisplay("Game Over. YOU LOSE.");
         }
     }
 
-    private boolean validateAllowedAction(Game game, AllowedAction allowedAction) {
-        game.setMessageToDisplay(game.getAllowedActions().contains(allowedAction) ? "" : "Action not allowed.");
-        return game.getMessageToDisplay().isEmpty();
+    private boolean validateAllowedAction(GameDTO gameDTO, AllowedAction allowedAction) {
+        gameDTO.setMessageToDisplay(gameDTO.getAllowedActions().contains(allowedAction) ? "" : "Action not allowed.");
+        return gameDTO.getMessageToDisplay().isEmpty();
     }
 
-    private boolean validatePlayedCardIndex(Game game, Integer playedCardIndex) {
-        game.setMessageToDisplay(playedCardIndex > -1 && playedCardIndex < game.getBoard().getPlayerHand().size() ? "" : "Selected card is not in hand.");
-        return game.getMessageToDisplay().isEmpty();
+    private boolean validatePlayedCardIndex(GameDTO gameDTO, Integer playedCardIndex) {
+        gameDTO.setMessageToDisplay(playedCardIndex > -1 && playedCardIndex < gameDTO.getBoardDTO().getPlayerHand().size() ? "" : "Selected card is not in hand.");
+        return gameDTO.getMessageToDisplay().isEmpty();
     }
 
-    private boolean validateDiscardedDoorIndex(Game game, Integer doorCardIndex) {
-        game.setMessageToDisplay(doorCardIndex > -1 && doorCardIndex < game.getBoard().getDiscoveredDoors().size() ? "" : "Selected door is not discovered.");
-        return game.getMessageToDisplay().isEmpty();
+    private boolean validateDiscardedDoorIndex(GameDTO gameDTO, Integer doorCardIndex) {
+        gameDTO.setMessageToDisplay(doorCardIndex > -1 && doorCardIndex < gameDTO.getBoardDTO().getDiscoveredDoors().size() ? "" : "Selected door is not discovered.");
+        return gameDTO.getMessageToDisplay().isEmpty();
     }
 
-    private boolean validateDifferentSymbol(Game game, Integer playedCardIndex) {
-        if (game.getBoard().getPlayedCards().isEmpty()) { return true; }
-        if (game.getBoard().getPlayerHand().get(playedCardIndex) instanceof LabyrinthCard selectedCard) {
-            LabyrinthCard lastCardPlayed = game.getBoard().getPlayedCards().get(game.getBoard().getPlayedCards().size() -1);
-            game.setMessageToDisplay(selectedCard.getSymbol().equals(lastCardPlayed.getSymbol()) ? "The chosen card must have a different symbol than the last card played." : "");
+    private boolean validateDifferentSymbol(GameDTO gameDTO, Integer playedCardIndex) {
+        if (gameDTO.getBoardDTO().getPlayedCards().isEmpty()) { return true; }
+        if (gameDTO.getBoardDTO().getPlayerHand().get(playedCardIndex) instanceof LabyrinthCardDTO selectedCard) {
+            LabyrinthCardDTO lastCardPlayed = gameDTO.getBoardDTO().getPlayedCards().get(gameDTO.getBoardDTO().getPlayedCards().size() -1);
+            gameDTO.setMessageToDisplay(selectedCard.getSymbol().equals(lastCardPlayed.getSymbol()) ? "The chosen card must have a different symbol than the last card played." : "");
         } else {
-            game.setMessageToDisplay("Selected card is not a Labyrinth Card.");
+            gameDTO.setMessageToDisplay("Selected card is not a Labyrinth Card.");
         }
-        return game.getMessageToDisplay().isEmpty();
+        return gameDTO.getMessageToDisplay().isEmpty();
     }
 
-    private boolean validateThirdConsecutiveCardOfTheSameColor(List<LabyrinthCard> playedCards) {
+    private boolean validateThirdConsecutiveCardOfTheSameColor(List<LabyrinthCardDTO> playedCards) {
         if (playedCards.size() < 3) { return false; }
-        LabyrinthCard lastCard = playedCards.get(playedCards.size() -1);
-        LabyrinthCard penultimateCard = playedCards.get(playedCards.size() -2);
-        LabyrinthCard beforePenultimateCard = playedCards.get(playedCards.size() -3);
+        LabyrinthCardDTO lastCard = playedCards.get(playedCards.size() -1);
+        LabyrinthCardDTO penultimateCard = playedCards.get(playedCards.size() -2);
+        LabyrinthCardDTO beforePenultimateCard = playedCards.get(playedCards.size() -3);
         boolean lastThreeCardsOfTheSameColor = lastCard.getColor().equals(penultimateCard.getColor()) && lastCard.getColor().equals(beforePenultimateCard.getColor());
         if (playedCards.size() == 3) { return lastThreeCardsOfTheSameColor; }
-        LabyrinthCard fourthCard = playedCards.get(playedCards.size() -4);
+        LabyrinthCardDTO fourthCard = playedCards.get(playedCards.size() -4);
         boolean fourthCardOfTheSameColor = lastCard.getColor().equals(fourthCard.getColor());
         return lastThreeCardsOfTheSameColor && !fourthCardOfTheSameColor;
     }
 
-    private boolean validateDiscardedCardHasKeySymbol(Card discardedCard) {
-        return discardedCard instanceof LabyrinthCard discardedLabyrinthCard && discardedLabyrinthCard.getSymbol().equals(Symbol.KEY);
+    private boolean validateDiscardedCardHasKeySymbol(CardDTO discardedCardDTO) {
+        return discardedCardDTO instanceof LabyrinthCardDTO discardedLabyrinthCard && discardedLabyrinthCard.getSymbol().equals(Symbol.KEY);
     }
 
-    private boolean validateCardDeckNotEmpty(Game game) {
-        game.setMessageToDisplay(game.getBoard().getCardDeck().isEmpty() ? "Game Over. YOU LOSE." : "");
-        return game.getMessageToDisplay().isEmpty();
+    private boolean validateCardDeckNotEmpty(GameDTO gameDTO) {
+        gameDTO.setMessageToDisplay(gameDTO.getBoardDTO().getCardDTODeck().isEmpty() ? "Game Over. YOU LOSE." : "");
+        return gameDTO.getMessageToDisplay().isEmpty();
     }
 
-    private boolean validateChosenCardIsKeyCard(Game game, Integer discardedCardIndex) {
-        if (game.getBoard().getPlayerHand().get(discardedCardIndex) instanceof LabyrinthCard discardedLabyrinthCard
+    private boolean validateChosenCardIsKeyCard(GameDTO gameDTO, Integer discardedCardIndex) {
+        if (gameDTO.getBoardDTO().getPlayerHand().get(discardedCardIndex) instanceof LabyrinthCardDTO discardedLabyrinthCard
                 && discardedLabyrinthCard.getSymbol().equals(Symbol.KEY)) {
-            game.setMessageToDisplay("");
+            gameDTO.setMessageToDisplay("");
         } else {
-            game.setMessageToDisplay("Selected card is not a KEY card.");
+            gameDTO.setMessageToDisplay("Selected card is not a KEY card.");
         }
-        return game.getMessageToDisplay().isEmpty();
+        return gameDTO.getMessageToDisplay().isEmpty();
     }
 
-    private boolean validateAllDoorsDiscovered(Game game) {
-        game.setMessageToDisplay(game.getBoard().getDiscoveredDoors().size() == 8 ? "Game Over. YOU WIN." : "");
-        return !game.getMessageToDisplay().isEmpty();
+    private boolean validateAllDoorsDiscovered(GameDTO gameDTO) {
+        gameDTO.setMessageToDisplay(gameDTO.getBoardDTO().getDiscoveredDoors().size() == 8 ? "Game Over. YOU WIN." : "");
+        return !gameDTO.getMessageToDisplay().isEmpty();
     }
 
 }

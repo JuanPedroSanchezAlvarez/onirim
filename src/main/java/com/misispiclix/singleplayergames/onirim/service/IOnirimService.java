@@ -1,5 +1,6 @@
 package com.misispiclix.singleplayergames.onirim.service;
 
+import com.misispiclix.singleplayergames.onirim.domain.Game;
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
 
 import java.util.List;
@@ -15,4 +16,6 @@ public interface IOnirimService {
     GameDTO loseDoorCard(GameDTO gameDTO, Integer doorCardIndex);
     GameDTO discardTopCardsFromDeck(GameDTO gameDTO);
     GameDTO discardPlayerHand(GameDTO gameDTO);
+
+    Iterable<Game> getExample();
 }

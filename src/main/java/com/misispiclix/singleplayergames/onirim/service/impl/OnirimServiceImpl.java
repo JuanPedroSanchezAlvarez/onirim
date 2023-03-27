@@ -1,5 +1,6 @@
 package com.misispiclix.singleplayergames.onirim.service.impl;
 
+import com.misispiclix.singleplayergames.onirim.domain.Game;
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
 import com.misispiclix.singleplayergames.onirim.dto.card.CardDTO;
 import com.misispiclix.singleplayergames.onirim.dto.card.DoorCardDTO;
@@ -8,6 +9,7 @@ import com.misispiclix.singleplayergames.onirim.dto.card.NightmareCardDTO;
 import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
 import com.misispiclix.singleplayergames.onirim.enums.Color;
 import com.misispiclix.singleplayergames.onirim.enums.Symbol;
+import com.misispiclix.singleplayergames.onirim.repository.IOnirimRepository;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,12 @@ import java.util.List;
 
 @Service
 public class OnirimServiceImpl implements IOnirimService {
+
+    private final IOnirimRepository onirimRepository;
+
+    public OnirimServiceImpl(IOnirimRepository onirimRepository) {
+        this.onirimRepository = onirimRepository;
+    }
 
     @Override
     public GameDTO createNewGame() {
@@ -171,6 +179,11 @@ public class OnirimServiceImpl implements IOnirimService {
         // We set the next allowed actions.
         checkPlayerHandSizeAndSetAllowedActions(gameDTO);
         return gameDTO;
+    }
+
+    @Override
+    public Iterable<Game> getExample() {
+        return onirimRepository.findAll();
     }
 
     private void initializeCardDeck(GameDTO gameDTO) {

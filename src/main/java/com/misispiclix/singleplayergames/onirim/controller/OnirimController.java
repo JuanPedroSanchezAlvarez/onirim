@@ -3,13 +3,15 @@ package com.misispiclix.singleplayergames.onirim.controller;
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
 @Controller
 public class OnirimController {
 
-    private IOnirimService onirimService;
+    private final IOnirimService onirimService;
 
     public OnirimController(IOnirimService onirimService) {
         this.onirimService = onirimService;
@@ -53,6 +55,12 @@ public class OnirimController {
 
     public GameDTO discardPlayerHand(GameDTO gameDTO) {
         return onirimService.discardPlayerHand(gameDTO);
+    }
+
+    @GetMapping(path = "/example")
+    public String getExample(Model model) {
+        model.addAttribute("games", onirimService.getExample());
+        return "example";
     }
 
 }

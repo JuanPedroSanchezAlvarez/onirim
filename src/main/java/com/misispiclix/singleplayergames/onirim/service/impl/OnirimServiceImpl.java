@@ -46,7 +46,7 @@ public class OnirimServiceImpl implements IOnirimService {
         // We play the chosen card.
         playCard(gameDTO, playedCardIndex);
         // We check that the card just played is the third consecutive card of the same color.
-        if (validateThirdConsecutiveCardOfTheSameColor(gameDTO.getBoardDTO().getPlayedCards())) {
+        if (validateThirdConsecutiveCardOfTheSameColor(gameDTO.getBoard().getPlayedCards())) {
             // We look for a door card of that same color and play it.
             discoverDoor(gameDTO);
         }
@@ -68,8 +68,8 @@ public class OnirimServiceImpl implements IOnirimService {
         discardCard(gameDTO, discardedCardIndex);
         // We check that the discarded card has the key symbol.
         gameDTO.getAllowedActions().clear();
-        if (validateDiscardedCardHasKeySymbol(gameDTO.getBoardDTO().getDiscardedCardDTOS().get(gameDTO.getBoardDTO().getDiscardedCardDTOS().size() - 1))
-                && !gameDTO.getBoardDTO().getCardDTODeck().isEmpty()) {
+        if (validateDiscardedCardHasKeySymbol(gameDTO.getBoard().getDiscardedCards().get(gameDTO.getBoard().getDiscardedCards().size() - 1))
+                && !gameDTO.getBoard().getCardDeck().isEmpty()) {
             // We must activate a prophecy.
             gameDTO.getAllowedActions().add(AllowedAction.ACTIVATE_PROPHECY);
         } else {
@@ -96,7 +96,7 @@ public class OnirimServiceImpl implements IOnirimService {
         // We check that the action is allowed.
         if (!validateAllowedAction(gameDTO, AllowedAction.CONFIRM_PROPHECY)) { return gameDTO; }
         // We discard the chosen card.
-        gameDTO.getBoardDTO().getDiscardedCardDTOS().add(gameDTO.getBoardDTO().getCardsToShow().get(discardedCardIndex));
+        gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getCardsToShow().get(discardedCardIndex));
         // We rearrange the top cards of the main deck in the chosen order.
         rearrangeTopCardsOfTheCardDeck(gameDTO, reorderedCardIndexes);
         // We must draw a card.
@@ -129,7 +129,7 @@ public class OnirimServiceImpl implements IOnirimService {
         // We check that the chosen card is a key card.
         if (!validateChosenCardIsKeyCard(gameDTO, discardedCardIndex)) { return gameDTO; }
         // We discard the chosen key card from hand.
-        gameDTO.getBoardDTO().getDiscardedCardDTOS().add(gameDTO.getBoardDTO().getPlayerHand().remove(discardedCardIndex.intValue()));
+        gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getPlayerHand().remove(discardedCardIndex.intValue()));
         // We set the next allowed actions.
         checkPlayerHandSizeAndSetAllowedActions(gameDTO);
         return gameDTO;
@@ -142,7 +142,7 @@ public class OnirimServiceImpl implements IOnirimService {
         // We check that the chosen door card exists in the discovered doors zone.
         if (!validateDiscardedDoorIndex(gameDTO, doorCardIndex)) { return gameDTO; }
         // We move the chosen door card to the limbo stack.
-        gameDTO.getBoardDTO().getLimboStack().add(gameDTO.getBoardDTO().getDiscoveredDoors().remove(doorCardIndex.intValue()));
+        gameDTO.getBoard().getLimboStack().add(gameDTO.getBoard().getDiscoveredDoors().remove(doorCardIndex.intValue()));
         // We set the next allowed actions.
         checkPlayerHandSizeAndSetAllowedActions(gameDTO);
         return gameDTO;
@@ -153,12 +153,12 @@ public class OnirimServiceImpl implements IOnirimService {
         // We check that the action is allowed.
         if (!validateAllowedAction(gameDTO, AllowedAction.DISCARD_TOP_CARDS_FROM_DECK)) { return gameDTO; }
         // We discard the top cards from the main deck.
-        int numberOfCardsToDiscard = Math.min(gameDTO.getBoardDTO().getCardDTODeck().size(), 5);
+        int numberOfCardsToDiscard = Math.min(gameDTO.getBoard().getCardDeck().size(), 5);
         for (int i = 0; i < numberOfCardsToDiscard; i++) {
-            if (gameDTO.getBoardDTO().getCardDTODeck().get(gameDTO.getBoardDTO().getCardDTODeck().size() - 1) instanceof LabyrinthCardDTO) {
-                gameDTO.getBoardDTO().getDiscardedCardDTOS().add(gameDTO.getBoardDTO().getCardDTODeck().remove(gameDTO.getBoardDTO().getCardDTODeck().size() - 1));
+            if (gameDTO.getBoard().getCardDeck().get(gameDTO.getBoard().getCardDeck().size() - 1) instanceof LabyrinthCardDTO) {
+                gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getCardDeck().remove(gameDTO.getBoard().getCardDeck().size() - 1));
             } else {
-                gameDTO.getBoardDTO().getLimboStack().add(gameDTO.getBoardDTO().getCardDTODeck().remove(gameDTO.getBoardDTO().getCardDTODeck().size() - 1));
+                gameDTO.getBoard().getLimboStack().add(gameDTO.getBoard().getCardDeck().remove(gameDTO.getBoard().getCardDeck().size() - 1));
             }
         }
         // We set the next allowed actions.
@@ -171,8 +171,8 @@ public class OnirimServiceImpl implements IOnirimService {
         // We check that the action is allowed.
         if (!validateAllowedAction(gameDTO, AllowedAction.DISCARD_PLAYER_HAND)) { return gameDTO; }
         // We discard the entire player hand.
-        while (!gameDTO.getBoardDTO().getPlayerHand().isEmpty()) {
-            gameDTO.getBoardDTO().getDiscardedCardDTOS().add(gameDTO.getBoardDTO().getPlayerHand().remove(gameDTO.getBoardDTO().getPlayerHand().size() - 1));
+        while (!gameDTO.getBoard().getPlayerHand().isEmpty()) {
+            gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getPlayerHand().remove(gameDTO.getBoard().getPlayerHand().size() - 1));
         }
         // We draw a new set of five cards.
         initializePlayerHand(gameDTO);
@@ -187,59 +187,59 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private void initializeCardDeck(GameDTO gameDTO) {
-        for (int i = 0; i < 10; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new NightmareCardDTO()); }
-        for (int i = 0; i < 3; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.RED, Symbol.KEY)); }
-        for (int i = 0; i < 4; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.RED, Symbol.MOON)); }
-        for (int i = 0; i < 9; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN)); }
-        for (int i = 0; i < 3; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.GREEN, Symbol.KEY)); }
-        for (int i = 0; i < 4; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.GREEN, Symbol.MOON)); }
-        for (int i = 0; i < 7; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.GREEN, Symbol.SUN)); }
-        for (int i = 0; i < 3; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY)); }
-        for (int i = 0; i < 4; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.MOON)); }
-        for (int i = 0; i < 8; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.SUN)); }
-        for (int i = 0; i < 3; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.KEY)); }
-        for (int i = 0; i < 4; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.MOON)); }
-        for (int i = 0; i < 6; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.SUN)); }
-        for (int i = 0; i < 2; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new DoorCardDTO(Color.RED)); }
-        for (int i = 0; i < 2; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new DoorCardDTO(Color.GREEN)); }
-        for (int i = 0; i < 2; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new DoorCardDTO(Color.BLUE)); }
-        for (int i = 0; i < 2; i++) { gameDTO.getBoardDTO().getCardDTODeck().add(new DoorCardDTO(Color.YELLOW)); }
+        for (int i = 0; i < 10; i++) { gameDTO.getBoard().getCardDeck().add(new NightmareCardDTO()); }
+        for (int i = 0; i < 3; i++) { gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.RED, Symbol.KEY)); }
+        for (int i = 0; i < 4; i++) { gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.RED, Symbol.MOON)); }
+        for (int i = 0; i < 9; i++) { gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN)); }
+        for (int i = 0; i < 3; i++) { gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.GREEN, Symbol.KEY)); }
+        for (int i = 0; i < 4; i++) { gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.GREEN, Symbol.MOON)); }
+        for (int i = 0; i < 7; i++) { gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.GREEN, Symbol.SUN)); }
+        for (int i = 0; i < 3; i++) { gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY)); }
+        for (int i = 0; i < 4; i++) { gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.MOON)); }
+        for (int i = 0; i < 8; i++) { gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.SUN)); }
+        for (int i = 0; i < 3; i++) { gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.KEY)); }
+        for (int i = 0; i < 4; i++) { gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.MOON)); }
+        for (int i = 0; i < 6; i++) { gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.SUN)); }
+        for (int i = 0; i < 2; i++) { gameDTO.getBoard().getCardDeck().add(new DoorCardDTO(Color.RED)); }
+        for (int i = 0; i < 2; i++) { gameDTO.getBoard().getCardDeck().add(new DoorCardDTO(Color.GREEN)); }
+        for (int i = 0; i < 2; i++) { gameDTO.getBoard().getCardDeck().add(new DoorCardDTO(Color.BLUE)); }
+        for (int i = 0; i < 2; i++) { gameDTO.getBoard().getCardDeck().add(new DoorCardDTO(Color.YELLOW)); }
         shuffleCardDeck(gameDTO);
     }
 
     private void shuffleCardDeck(GameDTO gameDTO) {
-        gameDTO.getBoardDTO().getLimboStack().forEach(card -> { gameDTO.getBoardDTO().getCardDTODeck().add(card); });
-        gameDTO.getBoardDTO().getLimboStack().clear();
-        Collections.shuffle(gameDTO.getBoardDTO().getCardDTODeck());
+        gameDTO.getBoard().getLimboStack().forEach(card -> { gameDTO.getBoard().getCardDeck().add(card); });
+        gameDTO.getBoard().getLimboStack().clear();
+        Collections.shuffle(gameDTO.getBoard().getCardDeck());
     }
 
     private void initializePlayerHand(GameDTO gameDTO) {
-        while (gameDTO.getBoardDTO().getPlayerHand().size() < 5) {
-            if (gameDTO.getBoardDTO().getCardDTODeck().get(gameDTO.getBoardDTO().getCardDTODeck().size() - 1) instanceof LabyrinthCardDTO) {
-                gameDTO.getBoardDTO().getPlayerHand().add(gameDTO.getBoardDTO().getCardDTODeck().remove(gameDTO.getBoardDTO().getCardDTODeck().size() - 1));
+        while (gameDTO.getBoard().getPlayerHand().size() < 5) {
+            if (gameDTO.getBoard().getCardDeck().get(gameDTO.getBoard().getCardDeck().size() - 1) instanceof LabyrinthCardDTO) {
+                gameDTO.getBoard().getPlayerHand().add(gameDTO.getBoard().getCardDeck().remove(gameDTO.getBoard().getCardDeck().size() - 1));
             } else {
-                gameDTO.getBoardDTO().getLimboStack().add(gameDTO.getBoardDTO().getCardDTODeck().remove(gameDTO.getBoardDTO().getCardDTODeck().size() - 1));
+                gameDTO.getBoard().getLimboStack().add(gameDTO.getBoard().getCardDeck().remove(gameDTO.getBoard().getCardDeck().size() - 1));
             }
         }
     }
 
     private void playCard(GameDTO gameDTO, Integer playedCardIndex) {
-        gameDTO.getBoardDTO().getPlayedCards().add((LabyrinthCardDTO) gameDTO.getBoardDTO().getPlayerHand().remove(playedCardIndex.intValue()));
+        gameDTO.getBoard().getPlayedCards().add((LabyrinthCardDTO) gameDTO.getBoard().getPlayerHand().remove(playedCardIndex.intValue()));
     }
 
     private void discardCard(GameDTO gameDTO, Integer discardedCardIndex) {
-        gameDTO.getBoardDTO().getDiscardedCardDTOS().add(gameDTO.getBoardDTO().getPlayerHand().remove(discardedCardIndex.intValue()));
+        gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getPlayerHand().remove(discardedCardIndex.intValue()));
     }
 
     private void drawCard(GameDTO gameDTO) {
-        gameDTO.getBoardDTO().getPlayerHand().add(gameDTO.getBoardDTO().getCardDTODeck().remove(gameDTO.getBoardDTO().getCardDTODeck().size() - 1));
+        gameDTO.getBoard().getPlayerHand().add(gameDTO.getBoard().getCardDeck().remove(gameDTO.getBoard().getCardDeck().size() - 1));
     }
 
     private void discoverDoor(GameDTO gameDTO) {
-        for (int i = 0; i < gameDTO.getBoardDTO().getCardDTODeck().size(); i++) {
-            if (gameDTO.getBoardDTO().getCardDTODeck().get(i) instanceof DoorCardDTO doorCard) {
-                if (doorCard.getColor().equals(gameDTO.getBoardDTO().getPlayedCards().get(gameDTO.getBoardDTO().getPlayedCards().size() - 1).getColor())) {
-                    gameDTO.getBoardDTO().getDiscoveredDoors().add((DoorCardDTO) gameDTO.getBoardDTO().getCardDTODeck().remove(i));
+        for (int i = 0; i < gameDTO.getBoard().getCardDeck().size(); i++) {
+            if (gameDTO.getBoard().getCardDeck().get(i) instanceof DoorCardDTO doorCard) {
+                if (doorCard.getColor().equals(gameDTO.getBoard().getPlayedCards().get(gameDTO.getBoard().getPlayedCards().size() - 1).getColor())) {
+                    gameDTO.getBoard().getDiscoveredDoors().add((DoorCardDTO) gameDTO.getBoard().getCardDeck().remove(i));
                     break;
                 }
             }
@@ -248,9 +248,9 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private void showProphecyCards(GameDTO gameDTO) {
-        int numberOfCardsToShow = Math.min(gameDTO.getBoardDTO().getCardDTODeck().size(), 5);
+        int numberOfCardsToShow = Math.min(gameDTO.getBoard().getCardDeck().size(), 5);
         for (int i = 0; i < numberOfCardsToShow; i++) {
-            gameDTO.getBoardDTO().getCardsToShow().add(gameDTO.getBoardDTO().getCardDTODeck().remove(gameDTO.getBoardDTO().getCardDTODeck().size() - 1));
+            gameDTO.getBoard().getCardsToShow().add(gameDTO.getBoard().getCardDeck().remove(gameDTO.getBoard().getCardDeck().size() - 1));
         }
     }
 
@@ -260,19 +260,19 @@ public class OnirimServiceImpl implements IOnirimService {
             int j = 0;
             for (Integer index : reorderedCardIndexes) {
                 if (i == index) {
-                    reorderedCardListDTO.add(gameDTO.getBoardDTO().getCardsToShow().get(j));
+                    reorderedCardListDTO.add(gameDTO.getBoard().getCardsToShow().get(j));
                 }
                 j++;
             }
         }
         while (!reorderedCardListDTO.isEmpty()) {
-            gameDTO.getBoardDTO().getCardDTODeck().add(reorderedCardListDTO.remove(reorderedCardListDTO.size() - 1));
+            gameDTO.getBoard().getCardDeck().add(reorderedCardListDTO.remove(reorderedCardListDTO.size() - 1));
         }
-        gameDTO.getBoardDTO().getCardsToShow().clear();
+        gameDTO.getBoard().getCardsToShow().clear();
     }
 
     private void checkTypeOfCardDrawn(GameDTO gameDTO) {
-        switch (gameDTO.getBoardDTO().getPlayerHand().get(gameDTO.getBoardDTO().getPlayerHand().size() - 1)) {
+        switch (gameDTO.getBoard().getPlayerHand().get(gameDTO.getBoard().getPlayerHand().size() - 1)) {
             case DoorCardDTO doorCard -> { doorCardDrawnAction(gameDTO, doorCard); }
             case NightmareCardDTO ignored -> { nightmareCardDrawnAction(gameDTO); }
             default -> { checkPlayerHandSizeAndSetAllowedActions(gameDTO); }
@@ -281,7 +281,7 @@ public class OnirimServiceImpl implements IOnirimService {
 
     private void checkPlayerHandSizeAndSetAllowedActions(GameDTO gameDTO) {
         gameDTO.getAllowedActions().clear();
-        if (gameDTO.getBoardDTO().getPlayerHand().size() >= 5) {
+        if (gameDTO.getBoard().getPlayerHand().size() >= 5) {
             gameDTO.getAllowedActions().add(AllowedAction.PLAY_CARD_FROM_HAND);
             gameDTO.getAllowedActions().add(AllowedAction.DISCARD_CARD_FROM_HAND);
             shuffleCardDeck(gameDTO);
@@ -293,38 +293,38 @@ public class OnirimServiceImpl implements IOnirimService {
     private void doorCardDrawnAction(GameDTO gameDTO, DoorCardDTO doorCard) {
         // We check if we have a labyrinth card in hand with the key symbol and the same color as the drawn door card.
         boolean cardWithKeySymbolAndSameColorFound = false;
-        for (int i = 0; i < gameDTO.getBoardDTO().getPlayerHand().size(); i++) {
-            if (gameDTO.getBoardDTO().getPlayerHand().get(i) instanceof LabyrinthCardDTO labyrinthCard) {
+        for (int i = 0; i < gameDTO.getBoard().getPlayerHand().size(); i++) {
+            if (gameDTO.getBoard().getPlayerHand().get(i) instanceof LabyrinthCardDTO labyrinthCard) {
                 // If we have it, we discover the door and discard the key card.
                 if (labyrinthCard.getSymbol().equals(Symbol.KEY) && labyrinthCard.getColor().equals(doorCard.getColor())) {
                     cardWithKeySymbolAndSameColorFound = true;
-                    gameDTO.getBoardDTO().getDiscoveredDoors().add((DoorCardDTO) gameDTO.getBoardDTO().getPlayerHand().remove(gameDTO.getBoardDTO().getPlayerHand().size() - 1));
-                    gameDTO.getBoardDTO().getDiscardedCardDTOS().add(gameDTO.getBoardDTO().getPlayerHand().remove(i));
+                    gameDTO.getBoard().getDiscoveredDoors().add((DoorCardDTO) gameDTO.getBoard().getPlayerHand().remove(gameDTO.getBoard().getPlayerHand().size() - 1));
+                    gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getPlayerHand().remove(i));
                     break;
                 }
             }
         }
         // If we don't have it, we put the door card in the limbo stack.
         if (!cardWithKeySymbolAndSameColorFound) {
-            gameDTO.getBoardDTO().getLimboStack().add(gameDTO.getBoardDTO().getPlayerHand().remove(gameDTO.getBoardDTO().getPlayerHand().size() - 1));
+            gameDTO.getBoard().getLimboStack().add(gameDTO.getBoard().getPlayerHand().remove(gameDTO.getBoard().getPlayerHand().size() - 1));
         }
         checkPlayerHandSizeAndSetAllowedActions(gameDTO);
     }
 
     private void nightmareCardDrawnAction(GameDTO gameDTO) {
         gameDTO.getAllowedActions().clear();
-        for (CardDTO cardDTO : gameDTO.getBoardDTO().getPlayerHand()) {
+        for (CardDTO cardDTO : gameDTO.getBoard().getPlayerHand()) {
             if (cardDTO instanceof LabyrinthCardDTO labyrinthCard && labyrinthCard.getSymbol().equals(Symbol.KEY)) {
                 gameDTO.getAllowedActions().add(AllowedAction.DISCARD_KEY_CARD_FROM_HAND);
                 break;
             }
         }
-        if (!gameDTO.getBoardDTO().getDiscoveredDoors().isEmpty()) {
+        if (!gameDTO.getBoard().getDiscoveredDoors().isEmpty()) {
             gameDTO.getAllowedActions().add(AllowedAction.LOSE_DOOR_CARD);
         }
-        if (!gameDTO.getBoardDTO().getCardDTODeck().isEmpty()) {
+        if (!gameDTO.getBoard().getCardDeck().isEmpty()) {
             gameDTO.getAllowedActions().add(AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
-            if (gameDTO.getBoardDTO().getCardDTODeck().size() >= 5) {
+            if (gameDTO.getBoard().getCardDeck().size() >= 5) {
                 gameDTO.getAllowedActions().add(AllowedAction.DISCARD_PLAYER_HAND);
             }
         }
@@ -339,19 +339,19 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private boolean validatePlayedCardIndex(GameDTO gameDTO, Integer playedCardIndex) {
-        gameDTO.setMessageToDisplay(playedCardIndex > -1 && playedCardIndex < gameDTO.getBoardDTO().getPlayerHand().size() ? "" : "Selected card is not in hand.");
+        gameDTO.setMessageToDisplay(playedCardIndex > -1 && playedCardIndex < gameDTO.getBoard().getPlayerHand().size() ? "" : "Selected card is not in hand.");
         return gameDTO.getMessageToDisplay().isEmpty();
     }
 
     private boolean validateDiscardedDoorIndex(GameDTO gameDTO, Integer doorCardIndex) {
-        gameDTO.setMessageToDisplay(doorCardIndex > -1 && doorCardIndex < gameDTO.getBoardDTO().getDiscoveredDoors().size() ? "" : "Selected door is not discovered.");
+        gameDTO.setMessageToDisplay(doorCardIndex > -1 && doorCardIndex < gameDTO.getBoard().getDiscoveredDoors().size() ? "" : "Selected door is not discovered.");
         return gameDTO.getMessageToDisplay().isEmpty();
     }
 
     private boolean validateDifferentSymbol(GameDTO gameDTO, Integer playedCardIndex) {
-        if (gameDTO.getBoardDTO().getPlayedCards().isEmpty()) { return true; }
-        if (gameDTO.getBoardDTO().getPlayerHand().get(playedCardIndex) instanceof LabyrinthCardDTO selectedCard) {
-            LabyrinthCardDTO lastCardPlayed = gameDTO.getBoardDTO().getPlayedCards().get(gameDTO.getBoardDTO().getPlayedCards().size() -1);
+        if (gameDTO.getBoard().getPlayedCards().isEmpty()) { return true; }
+        if (gameDTO.getBoard().getPlayerHand().get(playedCardIndex) instanceof LabyrinthCardDTO selectedCard) {
+            LabyrinthCardDTO lastCardPlayed = gameDTO.getBoard().getPlayedCards().get(gameDTO.getBoard().getPlayedCards().size() -1);
             gameDTO.setMessageToDisplay(selectedCard.getSymbol().equals(lastCardPlayed.getSymbol()) ? "The chosen card must have a different symbol than the last card played." : "");
         } else {
             gameDTO.setMessageToDisplay("Selected card is not a Labyrinth Card.");
@@ -376,12 +376,12 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private boolean validateCardDeckNotEmpty(GameDTO gameDTO) {
-        gameDTO.setMessageToDisplay(gameDTO.getBoardDTO().getCardDTODeck().isEmpty() ? "Game Over. YOU LOSE." : "");
+        gameDTO.setMessageToDisplay(gameDTO.getBoard().getCardDeck().isEmpty() ? "Game Over. YOU LOSE." : "");
         return gameDTO.getMessageToDisplay().isEmpty();
     }
 
     private boolean validateChosenCardIsKeyCard(GameDTO gameDTO, Integer discardedCardIndex) {
-        if (gameDTO.getBoardDTO().getPlayerHand().get(discardedCardIndex) instanceof LabyrinthCardDTO discardedLabyrinthCard
+        if (gameDTO.getBoard().getPlayerHand().get(discardedCardIndex) instanceof LabyrinthCardDTO discardedLabyrinthCard
                 && discardedLabyrinthCard.getSymbol().equals(Symbol.KEY)) {
             gameDTO.setMessageToDisplay("");
         } else {
@@ -391,7 +391,7 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private boolean validateAllDoorsDiscovered(GameDTO gameDTO) {
-        gameDTO.setMessageToDisplay(gameDTO.getBoardDTO().getDiscoveredDoors().size() == 8 ? "Game Over. YOU WIN." : "");
+        gameDTO.setMessageToDisplay(gameDTO.getBoard().getDiscoveredDoors().size() == 8 ? "Game Over. YOU WIN." : "");
         return !gameDTO.getMessageToDisplay().isEmpty();
     }
 

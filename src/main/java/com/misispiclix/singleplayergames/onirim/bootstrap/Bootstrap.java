@@ -20,22 +20,18 @@ public class Bootstrap implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Game game1 = new Game();
-        Board board1 = new Board();
-        game1.setBoard(board1);
-        game1.setAllowedActions(List.of(AllowedAction.PLAY_CARD_FROM_HAND, AllowedAction.DISCARD_CARD_FROM_HAND));
-        game1.setMessageToDisplay("Hello I am game 1");
+        System.out.println("Init Bootstrap...");
 
-        Game game2 = new Game();
-        Board board2 = new Board();
-        game2.setBoard(board2);
-        game2.setAllowedActions(List.of(AllowedAction.ACTIVATE_PROPHECY, AllowedAction.CONFIRM_PROPHECY));
-        game2.setMessageToDisplay("Hello I am game 2");
+        Game game = new Game();
+        Board board = new Board();
+        game.setBoard(board);
+        game.setAllowedActions(List.of(AllowedAction.PLAY_CARD_FROM_HAND, AllowedAction.DISCARD_CARD_FROM_HAND));
+        game.setMessageToDisplay("Hello I am game 1");
 
-        Game game1Saved = onirimRepository.save(game1);
-        Game game2Saved = onirimRepository.save(game2);
+        Game gameSaved = onirimRepository.save(game);
 
-        System.out.println("In Bootstrap...");
+        System.out.println(gameSaved);
+        System.out.println("End Bootstrap...");
     }
 
 }

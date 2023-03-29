@@ -9,12 +9,12 @@ import java.util.List;
 @Data
 public class GameDTO {
 
-    private BoardDTO boardDTO;
+    private BoardDTO board;
     private List<AllowedAction> allowedActions;
     private String messageToDisplay;
 
     public GameDTO() {
-        this.boardDTO = new BoardDTO();
+        this.board = new BoardDTO();
         this.allowedActions = new ArrayList<>();
         this.messageToDisplay = "";
     }

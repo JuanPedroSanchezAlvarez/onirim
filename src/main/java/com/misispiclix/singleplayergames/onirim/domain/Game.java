@@ -14,11 +14,11 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "board_id")
     private Board board;
 
-    @ElementCollection(targetClass = AllowedAction.class, fetch = FetchType.LAZY)
+    @ElementCollection(targetClass = AllowedAction.class, fetch = FetchType.EAGER)
     @JoinTable(name = "allowed_actions", joinColumns = @JoinColumn(name = "game_id"))
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "allowed_actions")

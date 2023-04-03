@@ -2,6 +2,7 @@ package com.misispiclix.singleplayergames.onirim.controller;
 
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,7 @@ public class OnirimController {
 
     private final IOnirimService onirimService;
 
-    public OnirimController(IOnirimService onirimService) {
+    public OnirimController(@Qualifier(value = "onirimServiceImpl") IOnirimService onirimService) {
         this.onirimService = onirimService;
     }
 

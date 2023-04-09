@@ -11,6 +11,7 @@ import com.misispiclix.singleplayergames.onirim.enums.Color;
 import com.misispiclix.singleplayergames.onirim.enums.Symbol;
 import com.misispiclix.singleplayergames.onirim.repository.IOnirimRepository;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -18,15 +19,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@AllArgsConstructor
 @Primary
 @Service(value = "onirimServiceImpl")
 public class OnirimServiceImpl implements IOnirimService {
 
     private final IOnirimRepository onirimRepository;
-
-    public OnirimServiceImpl(IOnirimRepository onirimRepository) {
-        this.onirimRepository = onirimRepository;
-    }
 
     @Override
     public GameDTO createNewGame() {

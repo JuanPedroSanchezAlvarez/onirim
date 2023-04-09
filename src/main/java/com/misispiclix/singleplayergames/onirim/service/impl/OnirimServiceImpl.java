@@ -12,6 +12,7 @@ import com.misispiclix.singleplayergames.onirim.enums.Symbol;
 import com.misispiclix.singleplayergames.onirim.repository.IOnirimRepository;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @AllArgsConstructor
 @Primary
 @Service(value = "onirimServiceImpl")

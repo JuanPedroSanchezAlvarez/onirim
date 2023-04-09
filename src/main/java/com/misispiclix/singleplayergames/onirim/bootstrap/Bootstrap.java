@@ -9,14 +9,15 @@ import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
 import com.misispiclix.singleplayergames.onirim.enums.Color;
 import com.misispiclix.singleplayergames.onirim.enums.Symbol;
 import com.misispiclix.singleplayergames.onirim.repository.IOnirimRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.LongConsumer;
 
+@Slf4j
 @Component
 public class Bootstrap implements CommandLineRunner {
 
@@ -28,7 +29,7 @@ public class Bootstrap implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("Init Bootstrap...");
+        log.debug("Init Bootstrap...");
 
         Game game = new Game();
         Board board = new Board();
@@ -97,10 +98,10 @@ public class Bootstrap implements CommandLineRunner {
         game.setMessageToDisplay("Hello I am game 1");
 
         Game gameSaved = onirimRepository.save(game);
-        System.out.println(gameSaved);
+        log.debug(gameSaved.toString());
         Optional<Game> gameRecovered = onirimRepository.findById(1L);
-        System.out.println(gameRecovered.get());
-        System.out.println("End Bootstrap...");
+        log.debug(gameRecovered.get().toString());
+        log.debug("End Bootstrap...");
     }
 
 }

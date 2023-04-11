@@ -60,7 +60,7 @@ public class OnirimController {
 
     @GetMapping(path = "/example")
     public String getExample(Model model) {
-        model.addAttribute("games", onirimService.getExample());
+        model.addAttribute("games", onirimService.getExamples());
         return "example";
     }
 

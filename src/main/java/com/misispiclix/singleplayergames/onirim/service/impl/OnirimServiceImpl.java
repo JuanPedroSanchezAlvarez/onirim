@@ -184,8 +184,47 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public Iterable<Game> getExample() {
+    public Iterable<Game> getExamples() {
         return onirimRepository.findAll();
+    }
+
+    @Override
+    public Game getExampleById(Long id) {
+        return onirimRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public Game createExample(Game game) {
+
+        Game newGame = new Game();
+        newGame.setMessageToDisplay("Hola soy un nuevo juego!");
+
+        return onirimRepository.save(newGame);
+    }
+
+    @Override
+    public void updateExample(Long id, Game game) {
+        //onirimRepository.findById(id).ifPresent(onirimRepository::save);
+        Game existingGame = onirimRepository.findById(id).orElse(null);
+        if (null != existingGame) {
+            // Map game to existingGame.
+            onirimRepository.save(existingGame);
+        }
+    }
+
+    @Override
+    public void updateExamplePatch(Long id, Game game) {
+        //onirimRepository.findById(id).ifPresent(onirimRepository::save);
+        Game existingGame = onirimRepository.findById(id).orElse(null);
+        if (null != existingGame) {
+            // Map game to existingGame. Only not null properties.
+            onirimRepository.save(existingGame);
+        }
+    }
+
+    @Override
+    public void deleteExample(Long id) {
+        onirimRepository.deleteById(id);
     }
 
     private void initializeCardDeck(GameDTO gameDTO) {

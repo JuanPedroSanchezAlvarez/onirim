@@ -61,8 +61,33 @@ public class OnirimService2Impl implements IOnirimService {
     }
 
     @Override
-    public Iterable<Game> getExample() {
+    public Iterable<Game> getExamples() {
         return null;
+    }
+
+    @Override
+    public Game getExampleById(Long id) {
+        return null;
+    }
+
+    @Override
+    public Game createExample(Game game) {
+        return null;
+    }
+
+    @Override
+    public void updateExample(Long id, Game game) {
+
+    }
+
+    @Override
+    public void updateExamplePatch(Long id, Game game) {
+
+    }
+
+    @Override
+    public void deleteExample(Long id) {
+
     }
 
 }

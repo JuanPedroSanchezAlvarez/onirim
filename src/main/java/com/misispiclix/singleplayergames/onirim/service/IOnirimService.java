@@ -17,5 +17,10 @@ public interface IOnirimService {
     GameDTO discardTopCardsFromDeck(GameDTO gameDTO);
     GameDTO discardPlayerHand(GameDTO gameDTO);
 
-    Iterable<Game> getExample();
+    Iterable<Game> getExamples();
+    Game getExampleById(Long id);
+    Game createExample(Game game);
+    void updateExample(Long id, Game game);
+    void updateExamplePatch(Long id, Game game);
+    void deleteExample(Long id);
 }

@@ -2,7 +2,7 @@ package com.misispiclix.singleplayergames.onirim.controller;
 
 import com.misispiclix.singleplayergames.onirim.domain.Game;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
@@ -11,12 +11,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController
 @RequestMapping(path = "/onirim/api")
 public class OnirimRestController {
 
-    @Qualifier(value = "onirimServiceImpl") private final IOnirimService onirimService;
+    @Qualifier(value = "onirimServiceImpl")
+    private final IOnirimService onirimService;
 
     @GetMapping(path = "/example")
     public Iterable<Game> getExamples() {

@@ -13,43 +13,47 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(path = "/onirim/api")
 public class OnirimRestController {
+
+    public static final String ONIRIM_PATH = "/onirim/api";
+    public static final String ONIRIM_PATH_ID = ONIRIM_PATH + "/{id}";
+    public static final String EXAMPLE_PATH = ONIRIM_PATH + "/example";
+    public static final String EXAMPLE_PATH_ID = EXAMPLE_PATH + "/{id}";
 
     @Qualifier(value = "onirimServiceImpl")
     private final IOnirimService onirimService;
 
-    @GetMapping(path = "/example")
+    @GetMapping(path = EXAMPLE_PATH)
     public Iterable<Game> getExamples() {
         return onirimService.getExamples();
     }
 
-    @GetMapping(path = "/example/{id}")
+    @GetMapping(path = EXAMPLE_PATH_ID)
     public Game getExampleById(@PathVariable(value = "id") Long id) {
         return onirimService.getExampleById(id);
     }
 
-    @PostMapping(path = "/example")
+    @PostMapping(path = EXAMPLE_PATH)
     public ResponseEntity createExample(@RequestBody Game game) {
         Game createdGame = onirimService.createExample(game);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", "/onirim/api/example/" + createdGame.getId().toString());
+        headers.add("Location", EXAMPLE_PATH + createdGame.getId().toString());
         return new ResponseEntity(headers, HttpStatus.CREATED);
     }
 
-    @PutMapping(path = "/example/{id}")
+    @PutMapping(path = EXAMPLE_PATH_ID)
     public ResponseEntity updateExample(@PathVariable(value = "id") Long id, @RequestBody Game game) {
         onirimService.updateExample(id, game);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @PatchMapping(path = "/example/{id}")
+    @PatchMapping(path = EXAMPLE_PATH_ID)
     public ResponseEntity updateExamplePatch(@PathVariable(value = "id") Long id, @RequestBody Game game) {
         onirimService.updateExamplePatch(id, game);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping(path = "/example/{id}")
+    @DeleteMapping(path = EXAMPLE_PATH_ID)
     public ResponseEntity deleteExample(@PathVariable(value = "id") Long id) {
         onirimService.deleteExample(id);
         return new ResponseEntity(HttpStatus.NO_CONTENT);

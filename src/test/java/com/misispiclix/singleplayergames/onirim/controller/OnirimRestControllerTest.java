@@ -1,6 +1,5 @@
 package com.misispiclix.singleplayergames.onirim.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.misispiclix.singleplayergames.onirim.domain.Board;
 import com.misispiclix.singleplayergames.onirim.domain.Game;
@@ -27,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.misispiclix.singleplayergames.onirim.controller.OnirimRestController.EXAMPLE_PATH;
+import static com.misispiclix.singleplayergames.onirim.controller.OnirimRestController.EXAMPLE_PATH_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -128,7 +129,7 @@ class OnirimRestControllerTest {
 
     @Test
     void getExamples() throws Exception {
-        mockMvc.perform(get("/onirim/api/example").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(EXAMPLE_PATH).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.length()", is(3)));
@@ -136,7 +137,7 @@ class OnirimRestControllerTest {
 
     @Test
     void getExampleById() throws Exception {
-        mockMvc.perform(get("/onirim/api/example/1").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(EXAMPLE_PATH_ID, "1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(1)));
@@ -144,7 +145,7 @@ class OnirimRestControllerTest {
 
     @Test
     void createExample() throws Exception {
-        mockMvc.perform(post("/onirim/api/example").accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post(EXAMPLE_PATH).accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(this.game)))
                 .andExpect(status().isCreated())
@@ -154,7 +155,7 @@ class OnirimRestControllerTest {
     @Test
     void updateExample() throws Exception {
         this.game.setId(1L);
-        mockMvc.perform(put("/onirim/api/example/1").accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put(EXAMPLE_PATH_ID, "1").accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(this.game)))
                 .andExpect(status().isNoContent());
@@ -165,7 +166,7 @@ class OnirimRestControllerTest {
     void updateExamplePatch() throws Exception {
         Map<String, Object> gameMap = new HashMap<>();
         gameMap.put("messageToDisplay", "Hola 2");
-        mockMvc.perform(patch("/onirim/api/example/1").accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(patch(EXAMPLE_PATH_ID, "1").accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(gameMap)))
                 .andExpect(status().isNoContent());
@@ -176,7 +177,7 @@ class OnirimRestControllerTest {
 
     @Test
     void deleteExample() throws Exception {
-        mockMvc.perform(delete("/onirim/api/example/1").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(delete(EXAMPLE_PATH_ID, "1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
         verify(onirimService).deleteExample(idArgumentCaptor.capture());
         assertThat("1").isEqualTo(idArgumentCaptor.getValue());

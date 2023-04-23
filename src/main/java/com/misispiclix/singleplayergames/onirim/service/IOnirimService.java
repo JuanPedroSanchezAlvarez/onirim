@@ -4,6 +4,7 @@ import com.misispiclix.singleplayergames.onirim.domain.Game;
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IOnirimService {
     GameDTO createNewGame();
@@ -18,7 +19,7 @@ public interface IOnirimService {
     GameDTO discardPlayerHand(GameDTO gameDTO);
 
     Iterable<Game> getExamples();
-    Game getExampleById(Long id);
+    Optional<Game> getExampleById(Long id);
     Game createExample(Game game);
     void updateExample(Long id, Game game);
     void updateExamplePatch(Long id, Game game);

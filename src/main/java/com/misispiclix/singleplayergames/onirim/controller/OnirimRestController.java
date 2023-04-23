@@ -1,6 +1,7 @@
 package com.misispiclix.singleplayergames.onirim.controller;
 
 import com.misispiclix.singleplayergames.onirim.domain.Game;
+import com.misispiclix.singleplayergames.onirim.exception.NotFoundException;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ public class OnirimRestController {
 
     @GetMapping(path = EXAMPLE_PATH_ID)
     public Game getExampleById(@PathVariable(value = "id") Long id) {
-        return onirimService.getExampleById(id);
+        return onirimService.getExampleById(id).orElseThrow(NotFoundException::new);
     }
 
     @PostMapping(path = EXAMPLE_PATH)

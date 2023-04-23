@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -189,8 +190,8 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public Game getExampleById(Long id) {
-        return onirimRepository.findById(id).orElse(null);
+    public Optional<Game> getExampleById(Long id) {
+        return onirimRepository.findById(id);
     }
 
     @Override

@@ -144,6 +144,11 @@ class OnirimRestControllerTest {
     }
 
     @Test
+    void getExampleByIdNotFoundException() throws Exception {
+        mockMvc.perform(get(EXAMPLE_PATH_ID, "999")).andExpect(status().isNotFound());
+    }
+
+    @Test
     void createExample() throws Exception {
         mockMvc.perform(post(EXAMPLE_PATH).accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)

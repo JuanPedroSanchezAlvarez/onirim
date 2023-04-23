@@ -6,6 +6,7 @@ import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service(value = "onirimService2Impl")
 public class OnirimService2Impl implements IOnirimService {
@@ -66,7 +67,7 @@ public class OnirimService2Impl implements IOnirimService {
     }
 
     @Override
-    public Game getExampleById(Long id) {
+    public Optional<Game> getExampleById(Long id) {
         return null;
     }
 

@@ -5,6 +5,7 @@ import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface IOnirimService {
     GameDTO createNewGame();
@@ -19,9 +20,9 @@ public interface IOnirimService {
     GameDTO discardPlayerHand(GameDTO gameDTO);
 
     Iterable<Game> getExamples();
-    Optional<Game> getExampleById(Long id);
+    Optional<Game> getExampleById(UUID id);
     Game createExample(Game game);
-    void updateExample(Long id, Game game);
-    void updateExamplePatch(Long id, Game game);
-    void deleteExample(Long id);
+    void updateExample(UUID id, Game game);
+    void updateExamplePatch(UUID id, Game game);
+    void deleteExample(UUID id);
 }

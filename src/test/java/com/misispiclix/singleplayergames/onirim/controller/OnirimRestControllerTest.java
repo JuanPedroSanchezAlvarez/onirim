@@ -21,10 +21,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.misispiclix.singleplayergames.onirim.controller.OnirimRestController.EXAMPLE_PATH;
 import static com.misispiclix.singleplayergames.onirim.controller.OnirimRestController.EXAMPLE_PATH_ID;
@@ -45,7 +42,7 @@ class OnirimRestControllerTest {
     private ObjectMapper objectMapper;
 
     @Captor
-    ArgumentCaptor<Long> idArgumentCaptor;
+    ArgumentCaptor<UUID> idArgumentCaptor;
 
     @Captor
     ArgumentCaptor<Game> gameArgumentCaptor;
@@ -140,7 +137,7 @@ class OnirimRestControllerTest {
         mockMvc.perform(get(EXAMPLE_PATH_ID, "1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", is(1)));
+                .andExpect(jsonPath("$.id", is("1")));
     }
 
     @Test
@@ -159,12 +156,12 @@ class OnirimRestControllerTest {
 
     @Test
     void updateExample() throws Exception {
-        this.game.setId(1L);
+        this.game.setId(UUID.fromString("1"));
         mockMvc.perform(put(EXAMPLE_PATH_ID, "1").accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(this.game)))
                 .andExpect(status().isNoContent());
-        verify(onirimService).updateExample(any(Long.class), any(Game.class));
+        verify(onirimService).updateExample(any(UUID.class), any(Game.class));
     }
 
     @Test

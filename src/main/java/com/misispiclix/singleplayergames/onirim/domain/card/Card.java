@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.misispiclix.singleplayergames.onirim.domain.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
@@ -12,7 +14,9 @@ import lombok.Data;
         @JsonSubTypes.Type(value = LabyrinthCard.class, name = "labyrinthCard"),
         @JsonSubTypes.Type(value = NightmareCard.class, name = "nightmareCard")
 })
-@Data
+@Getter
+@Setter
+@ToString
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "card_type", discriminatorType = DiscriminatorType.INTEGER)

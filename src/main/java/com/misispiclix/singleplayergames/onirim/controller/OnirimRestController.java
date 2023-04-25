@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -30,7 +32,7 @@ public class OnirimRestController {
     }
 
     @GetMapping(path = EXAMPLE_PATH_ID)
-    public Game getExampleById(@PathVariable(value = "id") Long id) {
+    public Game getExampleById(@PathVariable(value = "id") UUID id) {
         return onirimService.getExampleById(id).orElseThrow(NotFoundException::new);
     }
 
@@ -43,19 +45,19 @@ public class OnirimRestController {
     }
 
     @PutMapping(path = EXAMPLE_PATH_ID)
-    public ResponseEntity updateExample(@PathVariable(value = "id") Long id, @RequestBody Game game) {
+    public ResponseEntity updateExample(@PathVariable(value = "id") UUID id, @RequestBody Game game) {
         onirimService.updateExample(id, game);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     @PatchMapping(path = EXAMPLE_PATH_ID)
-    public ResponseEntity updateExamplePatch(@PathVariable(value = "id") Long id, @RequestBody Game game) {
+    public ResponseEntity updateExamplePatch(@PathVariable(value = "id") UUID id, @RequestBody Game game) {
         onirimService.updateExamplePatch(id, game);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(path = EXAMPLE_PATH_ID)
-    public ResponseEntity deleteExample(@PathVariable(value = "id") Long id) {
+    public ResponseEntity deleteExample(@PathVariable(value = "id") UUID id) {
         onirimService.deleteExample(id);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }

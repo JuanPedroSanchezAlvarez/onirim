@@ -16,10 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -190,7 +187,7 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public Optional<Game> getExampleById(Long id) {
+    public Optional<Game> getExampleById(UUID id) {
         return onirimRepository.findById(id);
     }
 
@@ -204,7 +201,7 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public void updateExample(Long id, Game game) {
+    public void updateExample(UUID id, Game game) {
         //onirimRepository.findById(id).ifPresent(onirimRepository::save);
         Game existingGame = onirimRepository.findById(id).orElse(null);
         if (null != existingGame) {
@@ -214,7 +211,7 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public void updateExamplePatch(Long id, Game game) {
+    public void updateExamplePatch(UUID id, Game game) {
         //onirimRepository.findById(id).ifPresent(onirimRepository::save);
         Game existingGame = onirimRepository.findById(id).orElse(null);
         if (null != existingGame) {
@@ -224,7 +221,7 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public void deleteExample(Long id) {
+    public void deleteExample(UUID id) {
         onirimRepository.deleteById(id);
     }
 

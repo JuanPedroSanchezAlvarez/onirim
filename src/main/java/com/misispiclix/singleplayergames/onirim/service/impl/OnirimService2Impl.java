@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service(value = "onirimService2Impl")
 public class OnirimService2Impl implements IOnirimService {
@@ -67,7 +68,7 @@ public class OnirimService2Impl implements IOnirimService {
     }
 
     @Override
-    public Optional<Game> getExampleById(Long id) {
+    public Optional<Game> getExampleById(UUID id) {
         return null;
     }
 
@@ -77,17 +78,17 @@ public class OnirimService2Impl implements IOnirimService {
     }
 
     @Override
-    public void updateExample(Long id, Game game) {
+    public void updateExample(UUID id, Game game) {
 
     }
 
     @Override
-    public void updateExamplePatch(Long id, Game game) {
+    public void updateExamplePatch(UUID id, Game game) {
 
     }
 
     @Override
-    public void deleteExample(Long id) {
+    public void deleteExample(UUID id) {
 
     }
 

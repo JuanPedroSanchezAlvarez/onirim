@@ -2,11 +2,15 @@ package com.misispiclix.singleplayergames.onirim.domain;
 
 import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@ToString
 @Entity
 public class Game extends BaseEntity {
 

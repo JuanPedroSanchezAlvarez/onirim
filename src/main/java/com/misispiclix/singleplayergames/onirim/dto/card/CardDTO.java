@@ -1,4 +1,8 @@
 package com.misispiclix.singleplayergames.onirim.dto.card;
 
-public abstract class CardDTO {
+import com.misispiclix.singleplayergames.onirim.dto.BaseDTO;
+import lombok.Data;
+
+@Data
+public abstract class CardDTO extends BaseDTO {
 }

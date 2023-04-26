@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class BoardDTO {
+public class BoardDTO extends BaseDTO {
 
     private List<CardDTO> cardDeck;
     private List<CardDTO> limboStack;

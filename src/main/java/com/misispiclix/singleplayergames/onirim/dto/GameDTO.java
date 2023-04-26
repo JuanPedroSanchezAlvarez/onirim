@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class GameDTO {
+public class GameDTO extends BaseDTO {
 
     private BoardDTO board;
     private List<AllowedAction> allowedActions;

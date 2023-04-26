@@ -1,4 +1,4 @@
-package com.misispiclix.singleplayergames.onirim.bootstrap;
+package com.misispiclix.singleplayergames.onirim.repository;
 
 import com.misispiclix.singleplayergames.onirim.domain.Board;
 import com.misispiclix.singleplayergames.onirim.domain.Game;
@@ -8,30 +8,26 @@ import com.misispiclix.singleplayergames.onirim.domain.card.NightmareCard;
 import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
 import com.misispiclix.singleplayergames.onirim.enums.Color;
 import com.misispiclix.singleplayergames.onirim.enums.Symbol;
-import com.misispiclix.singleplayergames.onirim.repository.IOnirimRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
-@Slf4j
-@Component
-public class Bootstrap implements CommandLineRunner {
+import static org.assertj.core.api.Assertions.assertThat;
 
-    private final IOnirimRepository onirimRepository;
+@DataJpaTest
+class IOnirimRepositoryTest {
 
-    public Bootstrap(IOnirimRepository onirimRepository) {
-        this.onirimRepository = onirimRepository;
-    }
+    @Autowired
+    private IOnirimRepository onirimRepository;
 
-    @Override
-    public void run(String... args) throws Exception {
-        log.debug("Init Bootstrap...");
+    private Game game;
 
+    @BeforeEach
+    void setUp() {
         Game game = new Game();
         Board board = new Board();
         board.setCardDeck(new ArrayList<>());
@@ -98,11 +94,14 @@ public class Bootstrap implements CommandLineRunner {
         game.setAllowedActions(List.of(AllowedAction.PLAY_CARD_FROM_HAND, AllowedAction.DISCARD_CARD_FROM_HAND));
         game.setMessageToDisplay("Hello I am game 1");
 
-        Game gameSaved = onirimRepository.save(game);
-        log.debug(gameSaved.toString());
-        Optional<Game> gameRecovered = onirimRepository.findById(UUID.fromString("1"));
-        log.debug(gameRecovered.get().toString());
-        log.debug("End Bootstrap...");
+        this.game = game;
+    }
+
+    @Test
+    void save() {
+        Game savedGame = onirimRepository.save(game);
+        assertThat(savedGame).isNotNull();
+        assertThat(savedGame.getId()).isNotNull();
     }
 
 }

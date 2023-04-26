@@ -6,8 +6,6 @@ import lombok.*;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @DiscriminatorValue("3")
 public class NightmareCard extends Card {

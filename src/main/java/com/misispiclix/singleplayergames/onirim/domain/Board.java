@@ -4,15 +4,14 @@ import com.misispiclix.singleplayergames.onirim.domain.card.Card;
 import com.misispiclix.singleplayergames.onirim.domain.card.DoorCard;
 import com.misispiclix.singleplayergames.onirim.domain.card.LabyrinthCard;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
 @Getter
 @Setter
-@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Board extends BaseEntity {
 

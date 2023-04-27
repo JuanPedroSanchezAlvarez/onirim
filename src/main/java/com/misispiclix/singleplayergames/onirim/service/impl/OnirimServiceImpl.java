@@ -311,11 +311,11 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private void checkTypeOfCardDrawn(GameDTO gameDTO) {
-        switch (gameDTO.getBoard().getPlayerHand().get(gameDTO.getBoard().getPlayerHand().size() - 1)) {
+        /* TODO switch (gameDTO.getBoard().getPlayerHand().get(gameDTO.getBoard().getPlayerHand().size() - 1)) {
             case DoorCardDTO doorCard -> { doorCardDrawnAction(gameDTO, doorCard); }
             case NightmareCardDTO ignored -> { nightmareCardDrawnAction(gameDTO); }
             default -> { checkPlayerHandSizeAndSetAllowedActions(gameDTO); }
-        };
+        };*/
     }
 
     private void checkPlayerHandSizeAndSetAllowedActions(GameDTO gameDTO) {

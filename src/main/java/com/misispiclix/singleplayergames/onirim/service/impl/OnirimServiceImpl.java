@@ -9,6 +9,7 @@ import com.misispiclix.singleplayergames.onirim.dto.card.NightmareCardDTO;
 import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
 import com.misispiclix.singleplayergames.onirim.enums.Color;
 import com.misispiclix.singleplayergames.onirim.enums.Symbol;
+import com.misispiclix.singleplayergames.onirim.mapper.IOnirimMapper;
 import com.misispiclix.singleplayergames.onirim.repository.IOnirimRepository;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ import java.util.*;
 public class OnirimServiceImpl implements IOnirimService {
 
     private final IOnirimRepository onirimRepository;
+    private final IOnirimMapper onirimMapper;
 
     @Override
     public GameDTO createNewGame() {
@@ -182,36 +187,40 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public Iterable<Game> getExamples() {
-        return onirimRepository.findAll();
+    public List<GameDTO> getExamples() {
+        return onirimRepository.findAll().stream().map(onirimMapper::gameToGameDto).collect(Collectors.toList());
     }
 
     @Override
-    public Optional<Game> getExampleById(UUID id) {
-        return onirimRepository.findById(id);
+    public Optional<GameDTO> getExampleById(UUID id) {
+        return Optional.ofNullable(onirimMapper.gameToGameDto(onirimRepository.findById(id).orElse(null)));
     }
 
     @Override
-    public Game createExample(Game game) {
-
-        Game newGame = new Game();
-        newGame.setMessageToDisplay("Hola soy un nuevo juego!");
-
-        return onirimRepository.save(newGame);
+    public GameDTO createExample(GameDTO gameDTO) {
+        return onirimMapper.gameToGameDto(onirimRepository.save(onirimMapper.gameDtoToGame(gameDTO)));
     }
 
     @Override
-    public void updateExample(UUID id, Game game) {
+    public Optional<GameDTO> updateExample(UUID id, GameDTO gameDTO) {
         //onirimRepository.findById(id).ifPresent(onirimRepository::save);
-        Game existingGame = onirimRepository.findById(id).orElse(null);
+        /*Game existingGame = onirimRepository.findById(id).orElse(null);
         if (null != existingGame) {
             // Map game to existingGame.
             onirimRepository.save(existingGame);
-        }
+        }*/
+        AtomicReference<Optional<GameDTO>> atomicReference = new AtomicReference<>();
+        onirimRepository.findById(id).ifPresentOrElse(foundGame -> {
+            foundGame.setMessageToDisplay("UPDATED");
+            atomicReference.set(Optional.of(onirimMapper.gameToGameDto(onirimRepository.save(foundGame))));
+        }, () -> {
+            atomicReference.set(Optional.empty());
+        });
+        return atomicReference.get();
     }
 
     @Override
-    public void updateExamplePatch(UUID id, Game game) {
+    public void updateExamplePatch(UUID id, GameDTO gameDTO) {
         //onirimRepository.findById(id).ifPresent(onirimRepository::save);
         Game existingGame = onirimRepository.findById(id).orElse(null);
         if (null != existingGame) {
@@ -221,8 +230,12 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public void deleteExample(UUID id) {
-        onirimRepository.deleteById(id);
+    public Boolean deleteExample(UUID id) {
+        if (onirimRepository.existsById(id)) {
+            onirimRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
     private void initializeCardDeck(GameDTO gameDTO) {

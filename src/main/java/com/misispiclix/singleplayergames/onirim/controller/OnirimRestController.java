@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,7 +40,7 @@ public class OnirimRestController {
     }
 
     @PostMapping(path = EXAMPLE_PATH)
-    public ResponseEntity createExample(@RequestBody GameDTO gameDTO) {
+    public ResponseEntity createExample(@Validated @RequestBody GameDTO gameDTO) {
         GameDTO createdGame = onirimService.createExample(gameDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", EXAMPLE_PATH + createdGame.getId().toString());
@@ -47,7 +48,7 @@ public class OnirimRestController {
     }
 
     @PutMapping(path = EXAMPLE_PATH_ID)
-    public ResponseEntity updateExample(@PathVariable(value = "id") UUID id, @RequestBody GameDTO gameDTO) {
+    public ResponseEntity updateExample(@PathVariable(value = "id") UUID id, @Validated @RequestBody GameDTO gameDTO) {
         if (onirimService.updateExample(id, gameDTO).isEmpty()) {
             throw new NotFoundException();
         }

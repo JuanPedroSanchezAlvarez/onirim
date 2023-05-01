@@ -100,6 +100,7 @@ class IOnirimRepositoryTest {
     @Test
     void save() {
         Game savedGame = onirimRepository.save(game);
+        onirimRepository.flush();
         assertThat(savedGame).isNotNull();
         assertThat(savedGame.getId()).isNotNull();
     }

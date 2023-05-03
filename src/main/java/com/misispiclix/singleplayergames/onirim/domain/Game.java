@@ -3,7 +3,10 @@ package com.misispiclix.singleplayergames.onirim.domain;
 import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -25,5 +28,11 @@ public class Game extends BaseEntity {
 
     @Column(name = "message_to_display")
     private String messageToDisplay;
+
+    @CreationTimestamp
+    private LocalDateTime created;
+
+    @UpdateTimestamp
+    private LocalDateTime updated;
 
 }

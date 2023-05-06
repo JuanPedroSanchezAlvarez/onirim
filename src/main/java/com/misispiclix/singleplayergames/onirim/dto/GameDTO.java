@@ -15,6 +15,7 @@ public class GameDTO extends BaseDTO {
     private String messageToDisplay;
     private LocalDateTime created;
     private LocalDateTime updated;
+    private Integer version;
 
     public GameDTO() {
         this.board = new BoardDTO();

@@ -35,4 +35,7 @@ public class Game extends BaseEntity {
     @UpdateTimestamp
     private LocalDateTime updated;
 
+    @Version
+    private Integer version;
+
 }

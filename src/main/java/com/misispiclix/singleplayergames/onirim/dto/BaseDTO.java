@@ -8,6 +8,5 @@ import java.util.UUID;
 public abstract class BaseDTO {
 
     private UUID id;
-    private Integer version;
 
 }

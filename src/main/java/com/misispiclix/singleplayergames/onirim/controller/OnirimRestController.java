@@ -1,6 +1,5 @@
 package com.misispiclix.singleplayergames.onirim.controller;
 
-import com.misispiclix.singleplayergames.onirim.domain.Game;
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
 import com.misispiclix.singleplayergames.onirim.exception.NotFoundException;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
@@ -29,15 +28,64 @@ public class OnirimRestController {
     @Qualifier(value = "onirimServiceImpl")
     private final IOnirimService onirimService;
 
-    @GetMapping(path = EXAMPLE_PATH)
-    public List<GameDTO> getExamples() {
-        return onirimService.getExamples();
+    @GetMapping(path = ONIRIM_PATH)
+    public List<GameDTO> getGames() {
+        return onirimService.getGames();
     }
 
-    @GetMapping(path = EXAMPLE_PATH_ID)
-    public GameDTO getExampleById(@PathVariable(value = "id") UUID id) {
-        return onirimService.getExampleById(id).orElseThrow(NotFoundException::new);
+    @GetMapping(path = ONIRIM_PATH_ID)
+    public GameDTO getGameById(@PathVariable(value = "id") UUID id) {
+        return onirimService.getGameById(id).orElseThrow(NotFoundException::new);
     }
+
+    @PostMapping(path = ONIRIM_PATH)
+    public ResponseEntity createNewGame() {
+        UUID createdGameId = onirimService.createNewGame();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", ONIRIM_PATH + "/" + createdGameId);
+        return new ResponseEntity(headers, HttpStatus.CREATED);
+    }
+
+    @PutMapping(path = ONIRIM_PATH_ID)
+    public ResponseEntity playCardFromHand(@PathVariable(value = "id") UUID id, GameDTO gameDTO, Integer playedCardIndex) {
+        //return onirimService.playCardFromHand(gameDTO, playedCardIndex);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    public GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
+        return onirimService.discardCardFromHand(gameDTO, discardedCardIndex);
+    }
+
+    public GameDTO activateProphecy(GameDTO gameDTO) {
+        return onirimService.activateProphecy(gameDTO);
+    }
+
+    public GameDTO confirmProphecy(GameDTO gameDTO, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
+        return onirimService.confirmProphecy(gameDTO, discardedCardIndex, reorderedCardIndexes);
+    }
+
+    public GameDTO drawCardFromDeck(GameDTO gameDTO) {
+        return onirimService.drawCardFromDeck(gameDTO);
+    }
+
+    public GameDTO discardKeyCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
+        return onirimService.discardKeyCardFromHand(gameDTO, discardedCardIndex);
+    }
+
+    public GameDTO loseDoorCard(GameDTO gameDTO, Integer doorCardIndex) {
+        return onirimService.loseDoorCard(gameDTO, doorCardIndex);
+    }
+
+    public GameDTO discardTopCardsFromDeck(GameDTO gameDTO) {
+        return onirimService.discardTopCardsFromDeck(gameDTO);
+    }
+
+    public GameDTO discardPlayerHand(GameDTO gameDTO) {
+        return onirimService.discardPlayerHand(gameDTO);
+    }
+
+
+
 
     @PostMapping(path = EXAMPLE_PATH)
     public ResponseEntity createExample(@Validated @RequestBody GameDTO gameDTO) {

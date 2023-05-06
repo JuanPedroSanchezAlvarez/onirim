@@ -99,9 +99,9 @@ public class Bootstrap implements CommandLineRunner {
         game.setMessageToDisplay("Hello I am game 1");
 
         Game gameSaved = onirimRepository.save(game);
-        log.debug(gameSaved.toString());
-        Optional<Game> gameRecovered = onirimRepository.findById(UUID.fromString("1"));
-        log.debug(gameRecovered.get().toString());
+        //log.debug(gameSaved.toString());
+        Optional<Game> gameRecovered = onirimRepository.findById(gameSaved.getId());
+        //log.debug(gameRecovered.get().toString());
         log.debug("End Bootstrap...");
     }
 

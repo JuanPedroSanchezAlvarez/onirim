@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -32,12 +31,27 @@ public class OnirimServiceImpl implements IOnirimService {
     private final IOnirimMapper onirimMapper;
 
     @Override
-    public GameDTO createNewGame() {
+    public List<GameDTO> getGames() {
+        return onirimRepository.findAll().stream().map(onirimMapper::gameToGameDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<GameDTO> getGameById(UUID id) {
+        return Optional.ofNullable(onirimMapper.gameToGameDto(onirimRepository.findById(id).orElse(null)));
+    }
+
+    @Override
+    public UUID createNewGame() {
         GameDTO gameDTO = new GameDTO();
         initializeCardDeck(gameDTO);
         initializePlayerHand(gameDTO);
         checkPlayerHandSizeAndSetAllowedActions(gameDTO);
-        return gameDTO;
+        return saveGame(gameDTO).getId();
+    }
+
+    @Override
+    public GameDTO saveGame(GameDTO gameDTO) {
+        return onirimMapper.gameToGameDto(onirimRepository.save(onirimMapper.gameDtoToGame(gameDTO)));
     }
 
     @Override
@@ -186,15 +200,6 @@ public class OnirimServiceImpl implements IOnirimService {
         return gameDTO;
     }
 
-    @Override
-    public List<GameDTO> getExamples() {
-        return onirimRepository.findAll().stream().map(onirimMapper::gameToGameDto).collect(Collectors.toList());
-    }
-
-    @Override
-    public Optional<GameDTO> getExampleById(UUID id) {
-        return Optional.ofNullable(onirimMapper.gameToGameDto(onirimRepository.findById(id).orElse(null)));
-    }
 
     @Override
     public GameDTO createExample(GameDTO gameDTO) {
@@ -324,11 +329,13 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private void checkTypeOfCardDrawn(GameDTO gameDTO) {
-        /* TODO switch (gameDTO.getBoard().getPlayerHand().get(gameDTO.getBoard().getPlayerHand().size() - 1)) {
-            case DoorCardDTO doorCard -> { doorCardDrawnAction(gameDTO, doorCard); }
-            case NightmareCardDTO ignored -> { nightmareCardDrawnAction(gameDTO); }
-            default -> { checkPlayerHandSizeAndSetAllowedActions(gameDTO); }
-        };*/
+        if (gameDTO.getBoard().getPlayerHand().get(gameDTO.getBoard().getPlayerHand().size() - 1) instanceof DoorCardDTO doorCard) {
+            doorCardDrawnAction(gameDTO, doorCard);
+        } else if (gameDTO.getBoard().getPlayerHand().get(gameDTO.getBoard().getPlayerHand().size() - 1) instanceof NightmareCardDTO) {
+            nightmareCardDrawnAction(gameDTO);
+        } else {
+            checkPlayerHandSizeAndSetAllowedActions(gameDTO);
+        }
     }
 
     private void checkPlayerHandSizeAndSetAllowedActions(GameDTO gameDTO) {

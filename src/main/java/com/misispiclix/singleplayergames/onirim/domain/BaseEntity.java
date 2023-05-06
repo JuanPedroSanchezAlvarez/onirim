@@ -21,7 +21,4 @@ public abstract class BaseEntity {
     @Column(length = 36, columnDefinition = "varchar", updatable = false, nullable = false)
     private UUID id;
 
-    @Version
-    private Integer version;
-
 }

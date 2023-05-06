@@ -1,6 +1,5 @@
 package com.misispiclix.singleplayergames.onirim.service;
 
-import com.misispiclix.singleplayergames.onirim.domain.Game;
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
 
 import java.util.List;
@@ -8,7 +7,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface IOnirimService {
-    GameDTO createNewGame();
+    List<GameDTO> getGames();
+    Optional<GameDTO> getGameById(UUID id);
+    UUID createNewGame();
+    GameDTO saveGame(GameDTO gameDTO);
     GameDTO playCardFromHand(GameDTO gameDTO, Integer playedCardIndex);
     GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex);
     GameDTO activateProphecy(GameDTO gameDTO);
@@ -19,8 +21,7 @@ public interface IOnirimService {
     GameDTO discardTopCardsFromDeck(GameDTO gameDTO);
     GameDTO discardPlayerHand(GameDTO gameDTO);
 
-    List<GameDTO> getExamples();
-    Optional<GameDTO> getExampleById(UUID id);
+
     GameDTO createExample(GameDTO gameDTO);
     Optional<GameDTO> updateExample(UUID id, GameDTO gameDTO);
     void updateExamplePatch(UUID id, GameDTO gameDTO);

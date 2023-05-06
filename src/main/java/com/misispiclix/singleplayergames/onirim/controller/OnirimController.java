@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,7 +20,7 @@ public class OnirimController {
     @Qualifier(value = "onirimServiceImpl")
     private final IOnirimService onirimService;
 
-    public GameDTO createNewGame() {
+    public UUID createNewGame() {
         return onirimService.createNewGame();
     }
 
@@ -57,12 +58,6 @@ public class OnirimController {
 
     public GameDTO discardPlayerHand(GameDTO gameDTO) {
         return onirimService.discardPlayerHand(gameDTO);
-    }
-
-    @GetMapping(path = "/example")
-    public String getExample(Model model) {
-        model.addAttribute("games", onirimService.getExamples());
-        return "example";
     }
 
 }

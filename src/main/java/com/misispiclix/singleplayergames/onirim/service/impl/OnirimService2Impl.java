@@ -13,7 +13,22 @@ import java.util.UUID;
 public class OnirimService2Impl implements IOnirimService {
 
     @Override
-    public GameDTO createNewGame() {
+    public List<GameDTO> getGames() {
+        return null;
+    }
+
+    @Override
+    public Optional<GameDTO> getGameById(UUID id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public UUID createNewGame() {
+        return null;
+    }
+
+    @Override
+    public GameDTO saveGame(GameDTO gameDTO) {
         return null;
     }
 
@@ -62,15 +77,6 @@ public class OnirimService2Impl implements IOnirimService {
         return null;
     }
 
-    @Override
-    public List<GameDTO> getExamples() {
-        return null;
-    }
-
-    @Override
-    public Optional<GameDTO> getExampleById(UUID id) {
-        return Optional.empty();
-    }
 
     @Override
     public GameDTO createExample(GameDTO gameDTO) {

@@ -49,7 +49,7 @@ public class OnirimRestController {
     @PutMapping(path = ONIRIM_PATH_ID)
     public ResponseEntity playCardFromHand(@PathVariable(value = "id") UUID id, GameDTO gameDTO, Integer playedCardIndex) {
         //return onirimService.playCardFromHand(gameDTO, playedCardIndex);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     public GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {

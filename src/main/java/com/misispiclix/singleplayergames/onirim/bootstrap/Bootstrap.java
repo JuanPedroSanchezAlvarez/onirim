@@ -1,22 +1,9 @@
 package com.misispiclix.singleplayergames.onirim.bootstrap;
 
-import com.misispiclix.singleplayergames.onirim.domain.Board;
-import com.misispiclix.singleplayergames.onirim.domain.Game;
-import com.misispiclix.singleplayergames.onirim.domain.card.DoorCard;
-import com.misispiclix.singleplayergames.onirim.domain.card.LabyrinthCard;
-import com.misispiclix.singleplayergames.onirim.domain.card.NightmareCard;
-import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
-import com.misispiclix.singleplayergames.onirim.enums.Color;
-import com.misispiclix.singleplayergames.onirim.enums.Symbol;
 import com.misispiclix.singleplayergames.onirim.repository.IOnirimRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @Component
@@ -32,7 +19,7 @@ public class Bootstrap implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.debug("Init Bootstrap...");
 
-        Game game = new Game();
+        /* Game game = new Game();
         Board board = new Board();
         board.setCardDeck(new ArrayList<>());
         board.setDiscardedCards(new ArrayList<>());
@@ -99,9 +86,9 @@ public class Bootstrap implements CommandLineRunner {
         game.setMessageToDisplay("Hello I am game 1");
 
         Game gameSaved = onirimRepository.save(game);
-        //log.debug(gameSaved.toString());
+        log.debug(gameSaved.toString());
         Optional<Game> gameRecovered = onirimRepository.findById(gameSaved.getId());
-        //log.debug(gameRecovered.get().toString());
+        log.debug(gameRecovered.get().toString()); */
         log.debug("End Bootstrap...");
     }
 

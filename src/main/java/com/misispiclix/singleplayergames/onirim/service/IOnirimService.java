@@ -1,13 +1,14 @@
 package com.misispiclix.singleplayergames.onirim.service;
 
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface IOnirimService {
-    List<GameDTO> getGames();
+    Page<GameDTO> getGames(Integer pageNumber, Integer pageSize);
     Optional<GameDTO> getGameById(UUID id);
     UUID createNewGame();
     GameDTO saveGame(GameDTO gameDTO);

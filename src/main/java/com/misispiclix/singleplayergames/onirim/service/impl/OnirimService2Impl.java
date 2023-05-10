@@ -3,6 +3,7 @@ package com.misispiclix.singleplayergames.onirim.service.impl;
 import com.misispiclix.singleplayergames.onirim.domain.Game;
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.UUID;
 public class OnirimService2Impl implements IOnirimService {
 
     @Override
-    public List<GameDTO> getGames() {
+    public Page<GameDTO> getGames(Integer pageNumber, Integer pageSize) {
         return null;
     }
 

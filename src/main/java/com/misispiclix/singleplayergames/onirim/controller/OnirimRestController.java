@@ -6,6 +6,7 @@ import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +30,9 @@ public class OnirimRestController {
     private final IOnirimService onirimService;
 
     @GetMapping(path = ONIRIM_PATH)
-    public List<GameDTO> getGames() {
-        return onirimService.getGames();
+    public Page<GameDTO> getGames(@RequestParam(value = "pageNumber", defaultValue = "0") Integer pageNumber,
+                                  @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+        return onirimService.getGames(pageNumber, pageSize);
     }
 
     @GetMapping(path = ONIRIM_PATH_ID)

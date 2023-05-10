@@ -15,11 +15,13 @@ import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -31,8 +33,11 @@ public class OnirimServiceImpl implements IOnirimService {
     private final IOnirimMapper onirimMapper;
 
     @Override
-    public List<GameDTO> getGames() {
-        return onirimRepository.findAll().stream().map(onirimMapper::gameToGameDto).collect(Collectors.toList());
+    public Page<GameDTO> getGames(Integer pageNumber, Integer pageSize) {
+        //return onirimRepository.findAll().stream().map(onirimMapper::gameToGameDto).collect(Collectors.toList());
+        Sort sort = Sort.by(Sort.Order.desc("created"));
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sort);
+        return onirimRepository.findAll(pageRequest).map(onirimMapper::gameToGameDto);
     }
 
     @Override

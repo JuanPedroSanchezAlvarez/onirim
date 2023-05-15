@@ -2,7 +2,7 @@ package com.misispiclix.singleplayergames.onirim.controller;
 
 import com.misispiclix.singleplayergames.onirim.domain.Game;
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
-import com.misispiclix.singleplayergames.onirim.exception.NotFoundException;
+import com.misispiclix.singleplayergames.onirim.exception.GameNotFoundException;
 import com.misispiclix.singleplayergames.onirim.mapper.IOnirimMapper;
 import com.misispiclix.singleplayergames.onirim.repository.IOnirimRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,7 +69,7 @@ class OnirimRestControllerIT {
 
     @Test
     void getExampleByIdNotFound() {
-        assertThrows(NotFoundException.class, () -> {
+        assertThrows(GameNotFoundException.class, () -> {
             onirimRestController.getExampleById(UUID.randomUUID());
         });
     }
@@ -107,7 +107,7 @@ class OnirimRestControllerIT {
 
     @Test
     void updateExampleNotFound() {
-        assertThrows(NotFoundException.class, () -> {
+        assertThrows(GameNotFoundException.class, () -> {
             onirimRestController.updateExample(UUID.randomUUID(), new GameDTO());
         });
     }
@@ -128,7 +128,7 @@ class OnirimRestControllerIT {
 
     @Test
     void deleteExampleNotFound() {
-        assertThrows(NotFoundException.class, () -> {
+        assertThrows(GameNotFoundException.class, () -> {
             onirimRestController.deleteExample(UUID.randomUUID());
         });
     }

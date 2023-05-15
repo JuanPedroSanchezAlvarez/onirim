@@ -34,9 +34,7 @@ public class OnirimService2Impl implements IOnirimService {
     }
 
     @Override
-    public GameDTO playCardFromHand(GameDTO gameDTO, Integer playedCardIndex) {
-        return null;
-    }
+    public void playCardFromHand(UUID id, Integer playedCardIndex) { }
 
     @Override
     public GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {

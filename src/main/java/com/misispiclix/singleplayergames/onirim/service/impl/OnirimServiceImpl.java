@@ -9,6 +9,7 @@ import com.misispiclix.singleplayergames.onirim.dto.card.NightmareCardDTO;
 import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
 import com.misispiclix.singleplayergames.onirim.enums.Color;
 import com.misispiclix.singleplayergames.onirim.enums.Symbol;
+import com.misispiclix.singleplayergames.onirim.exception.*;
 import com.misispiclix.singleplayergames.onirim.mapper.IOnirimMapper;
 import com.misispiclix.singleplayergames.onirim.repository.IOnirimRepository;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
@@ -60,13 +61,15 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public GameDTO playCardFromHand(GameDTO gameDTO, Integer playedCardIndex) {
+    public void playCardFromHand(UUID id, Integer playedCardIndex) {
+        // We look for the game in the database.
+        GameDTO gameDTO = getGameById(id).orElseThrow(GameNotFoundException::new);
         // We check that the action is allowed.
-        if (!validateAllowedAction(gameDTO, AllowedAction.PLAY_CARD_FROM_HAND)) { return gameDTO; }
+        validateAllowedAction(gameDTO, AllowedAction.PLAY_CARD_FROM_HAND);
         // We check that the chosen card exists in the hand.
-        if (!validatePlayedCardIndex(gameDTO, playedCardIndex)) { return gameDTO; }
+        validatePlayedCardIndex(gameDTO, playedCardIndex);
         // We check that the chosen card has a different symbol than the last played.
-        if (!validateDifferentSymbol(gameDTO, playedCardIndex)) { return gameDTO; }
+        validateDifferentSymbol(gameDTO, playedCardIndex);
         // We play the chosen card.
         playCard(gameDTO, playedCardIndex);
         // We check that the card just played is the third consecutive card of the same color.
@@ -74,20 +77,23 @@ public class OnirimServiceImpl implements IOnirimService {
             // We look for a door card of that same color and play it.
             discoverDoor(gameDTO);
         }
-        // We check if all the door cards have been discovered.
-        if (validateAllDoorsDiscovered(gameDTO)) { return gameDTO; }
-        // We must draw a card.
+        // We remove the current allowed actions.
         gameDTO.getAllowedActions().clear();
-        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
-        return gameDTO;
+        // We check if all the door cards have been discovered.
+        if (!validateAllDoorsDiscovered(gameDTO)) {
+            // We must draw a card as the next allowed action.
+            gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        }
+        // We save the game in the database.
+        saveGame(gameDTO);
     }
 
     @Override
     public GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(gameDTO, AllowedAction.DISCARD_CARD_FROM_HAND)) { return gameDTO; }
+        validateAllowedAction(gameDTO, AllowedAction.DISCARD_CARD_FROM_HAND);
         // We check that the chosen card exists in the hand.
-        if (!validatePlayedCardIndex(gameDTO, discardedCardIndex)) { return gameDTO; }
+        //if (!validatePlayedCardIndex(gameDTO, discardedCardIndex)) { return gameDTO; }
         // We discard the chosen card.
         discardCard(gameDTO, discardedCardIndex);
         // We check that the discarded card has the key symbol.
@@ -106,7 +112,7 @@ public class OnirimServiceImpl implements IOnirimService {
     @Override
     public GameDTO activateProphecy(GameDTO gameDTO) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(gameDTO, AllowedAction.ACTIVATE_PROPHECY)) { return gameDTO; }
+        validateAllowedAction(gameDTO, AllowedAction.ACTIVATE_PROPHECY);
         // We show the prophecy cards.
         showProphecyCards(gameDTO);
         // We must confirm the prophecy.
@@ -118,7 +124,7 @@ public class OnirimServiceImpl implements IOnirimService {
     @Override
     public GameDTO confirmProphecy(GameDTO gameDTO, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(gameDTO, AllowedAction.CONFIRM_PROPHECY)) { return gameDTO; }
+        validateAllowedAction(gameDTO, AllowedAction.CONFIRM_PROPHECY);
         // We discard the chosen card.
         gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getCardsToShow().get(discardedCardIndex));
         // We rearrange the top cards of the main deck in the chosen order.
@@ -132,7 +138,7 @@ public class OnirimServiceImpl implements IOnirimService {
     @Override
     public GameDTO drawCardFromDeck(GameDTO gameDTO) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(gameDTO, AllowedAction.DRAW_CARD_FROM_DECK)) { return gameDTO; }
+        validateAllowedAction(gameDTO, AllowedAction.DRAW_CARD_FROM_DECK);
         // We check that the main deck is not empty.
         if (!validateCardDeckNotEmpty(gameDTO)) { return gameDTO; }
         // We draw a card from the main deck.
@@ -147,9 +153,9 @@ public class OnirimServiceImpl implements IOnirimService {
     @Override
     public GameDTO discardKeyCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(gameDTO, AllowedAction.DISCARD_KEY_CARD_FROM_HAND)) { return gameDTO; }
+        validateAllowedAction(gameDTO, AllowedAction.DISCARD_KEY_CARD_FROM_HAND);
         // We check that the chosen card exists in the hand.
-        if (!validatePlayedCardIndex(gameDTO, discardedCardIndex)) { return gameDTO; }
+        //if (!validatePlayedCardIndex(gameDTO, discardedCardIndex)) { return gameDTO; }
         // We check that the chosen card is a key card.
         if (!validateChosenCardIsKeyCard(gameDTO, discardedCardIndex)) { return gameDTO; }
         // We discard the chosen key card from hand.
@@ -162,7 +168,7 @@ public class OnirimServiceImpl implements IOnirimService {
     @Override
     public GameDTO loseDoorCard(GameDTO gameDTO, Integer doorCardIndex) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(gameDTO, AllowedAction.LOSE_DOOR_CARD)) { return gameDTO; }
+        validateAllowedAction(gameDTO, AllowedAction.LOSE_DOOR_CARD);
         // We check that the chosen door card exists in the discovered doors zone.
         if (!validateDiscardedDoorIndex(gameDTO, doorCardIndex)) { return gameDTO; }
         // We move the chosen door card to the limbo stack.
@@ -175,7 +181,7 @@ public class OnirimServiceImpl implements IOnirimService {
     @Override
     public GameDTO discardTopCardsFromDeck(GameDTO gameDTO) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(gameDTO, AllowedAction.DISCARD_TOP_CARDS_FROM_DECK)) { return gameDTO; }
+        validateAllowedAction(gameDTO, AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
         // We discard the top cards from the main deck.
         int numberOfCardsToDiscard = Math.min(gameDTO.getBoard().getCardDeck().size(), 5);
         for (int i = 0; i < numberOfCardsToDiscard; i++) {
@@ -193,7 +199,7 @@ public class OnirimServiceImpl implements IOnirimService {
     @Override
     public GameDTO discardPlayerHand(GameDTO gameDTO) {
         // We check that the action is allowed.
-        if (!validateAllowedAction(gameDTO, AllowedAction.DISCARD_PLAYER_HAND)) { return gameDTO; }
+        validateAllowedAction(gameDTO, AllowedAction.DISCARD_PLAYER_HAND);
         // We discard the entire player hand.
         while (!gameDTO.getBoard().getPlayerHand().isEmpty()) {
             gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getPlayerHand().remove(gameDTO.getBoard().getPlayerHand().size() - 1));
@@ -397,14 +403,16 @@ public class OnirimServiceImpl implements IOnirimService {
         }
     }
 
-    private boolean validateAllowedAction(GameDTO gameDTO, AllowedAction allowedAction) {
-        gameDTO.setMessageToDisplay(gameDTO.getAllowedActions().contains(allowedAction) ? "" : "Action not allowed.");
-        return gameDTO.getMessageToDisplay().isEmpty();
+    private void validateAllowedAction(GameDTO gameDTO, AllowedAction allowedAction) {
+        if (!gameDTO.getAllowedActions().contains(allowedAction)) {
+            throw new ActionNotAllowedException("Action " + allowedAction.toString() + " not allowed. The actions allowed for the game '" + gameDTO.getId().toString() + "' are: " + gameDTO.getAllowedActions().toString() + ".");
+        }
     }
 
-    private boolean validatePlayedCardIndex(GameDTO gameDTO, Integer playedCardIndex) {
-        gameDTO.setMessageToDisplay(playedCardIndex > -1 && playedCardIndex < gameDTO.getBoard().getPlayerHand().size() ? "" : "Selected card is not in hand.");
-        return gameDTO.getMessageToDisplay().isEmpty();
+    private void validatePlayedCardIndex(GameDTO gameDTO, Integer playedCardIndex) {
+        if (playedCardIndex < 0 || playedCardIndex > (gameDTO.getBoard().getPlayerHand().size() - 1)) {
+            throw new InvalidCardIndexException("The card index must be between '0' and '" + (gameDTO.getBoard().getPlayerHand().size() - 1) + "' .");
+        }
     }
 
     private boolean validateDiscardedDoorIndex(GameDTO gameDTO, Integer doorCardIndex) {
@@ -412,15 +420,17 @@ public class OnirimServiceImpl implements IOnirimService {
         return gameDTO.getMessageToDisplay().isEmpty();
     }
 
-    private boolean validateDifferentSymbol(GameDTO gameDTO, Integer playedCardIndex) {
-        if (gameDTO.getBoard().getPlayedCards().isEmpty()) { return true; }
+    private void validateDifferentSymbol(GameDTO gameDTO, Integer playedCardIndex) {
         if (gameDTO.getBoard().getPlayerHand().get(playedCardIndex) instanceof LabyrinthCardDTO selectedCard) {
-            LabyrinthCardDTO lastCardPlayed = gameDTO.getBoard().getPlayedCards().get(gameDTO.getBoard().getPlayedCards().size() -1);
-            gameDTO.setMessageToDisplay(selectedCard.getSymbol().equals(lastCardPlayed.getSymbol()) ? "The chosen card must have a different symbol than the last card played." : "");
+            if (!gameDTO.getBoard().getPlayedCards().isEmpty()) {
+                LabyrinthCardDTO lastCardPlayed = gameDTO.getBoard().getPlayedCards().get(gameDTO.getBoard().getPlayedCards().size() -1);
+                if (selectedCard.getSymbol().equals(lastCardPlayed.getSymbol())) {
+                    throw new EqualCardSymbolException("The selected card must have a different symbol than the last card played.");
+                }
+            }
         } else {
-            gameDTO.setMessageToDisplay("Selected card is not a Labyrinth Card.");
+            throw new NotALabyrinthCardException("The selected card is not a Labyrinth Card.");
         }
-        return gameDTO.getMessageToDisplay().isEmpty();
     }
 
     private boolean validateThirdConsecutiveCardOfTheSameColor(List<LabyrinthCardDTO> playedCards) {

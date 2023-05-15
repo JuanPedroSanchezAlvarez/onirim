@@ -1,7 +1,7 @@
 package com.misispiclix.singleplayergames.onirim.controller;
 
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
-import com.misispiclix.singleplayergames.onirim.exception.NotFoundException;
+import com.misispiclix.singleplayergames.onirim.exception.GameNotFoundException;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class OnirimRestController {
 
     @GetMapping(path = ONIRIM_PATH_ID)
     public GameDTO getGameById(@PathVariable(value = "id") UUID id) {
-        return onirimService.getGameById(id).orElseThrow(NotFoundException::new);
+        return onirimService.getGameById(id).orElseThrow(GameNotFoundException::new);
     }
 
     @PostMapping(path = ONIRIM_PATH)
@@ -48,9 +48,9 @@ public class OnirimRestController {
         return new ResponseEntity(headers, HttpStatus.CREATED);
     }
 
-    @PutMapping(path = ONIRIM_PATH_ID)
-    public ResponseEntity playCardFromHand(@PathVariable(value = "id") UUID id, GameDTO gameDTO, Integer playedCardIndex) {
-        //return onirimService.playCardFromHand(gameDTO, playedCardIndex);
+    @PutMapping(path = ONIRIM_PATH_ID + "/playCardFromHand")
+    public ResponseEntity playCardFromHand(@PathVariable(value = "id") UUID id, @RequestBody Integer playedCardIndex) {
+        onirimService.playCardFromHand(id, playedCardIndex);
         return new ResponseEntity(HttpStatus.OK);
     }
 
@@ -100,7 +100,7 @@ public class OnirimRestController {
     @PutMapping(path = EXAMPLE_PATH_ID)
     public ResponseEntity updateExample(@PathVariable(value = "id") UUID id, @Validated @RequestBody GameDTO gameDTO) {
         if (onirimService.updateExample(id, gameDTO).isEmpty()) {
-            throw new NotFoundException();
+            throw new GameNotFoundException();
         }
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
@@ -114,7 +114,7 @@ public class OnirimRestController {
     @DeleteMapping(path = EXAMPLE_PATH_ID)
     public ResponseEntity deleteExample(@PathVariable(value = "id") UUID id) {
         if (!onirimService.deleteExample(id)) {
-            throw new NotFoundException();
+            throw new GameNotFoundException();
         }
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }

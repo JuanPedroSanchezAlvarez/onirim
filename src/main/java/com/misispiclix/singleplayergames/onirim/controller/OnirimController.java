@@ -24,9 +24,9 @@ public class OnirimController {
         return onirimService.createNewGame();
     }
 
-    public GameDTO playCardFromHand(GameDTO gameDTO, Integer playedCardIndex) {
+    /*public GameDTO playCardFromHand(GameDTO gameDTO, Integer playedCardIndex) {
         return onirimService.playCardFromHand(gameDTO, playedCardIndex);
-    }
+    }*/
 
     public GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
         return onirimService.discardCardFromHand(gameDTO, discardedCardIndex);

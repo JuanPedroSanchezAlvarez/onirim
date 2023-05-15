@@ -12,7 +12,7 @@ public interface IOnirimService {
     Optional<GameDTO> getGameById(UUID id);
     UUID createNewGame();
     GameDTO saveGame(GameDTO gameDTO);
-    GameDTO playCardFromHand(GameDTO gameDTO, Integer playedCardIndex);
+    void playCardFromHand(UUID id, Integer playedCardIndex);
     GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex);
     GameDTO activateProphecy(GameDTO gameDTO);
     GameDTO confirmProphecy(GameDTO gameDTO, Integer discardedCardIndex, List<Integer> reorderedCardIndexes);

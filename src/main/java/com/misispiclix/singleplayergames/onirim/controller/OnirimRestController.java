@@ -66,8 +66,10 @@ public class OnirimRestController {
         return onirimService.confirmProphecy(gameDTO, discardedCardIndex, reorderedCardIndexes);
     }
 
-    public GameDTO drawCardFromDeck(GameDTO gameDTO) {
-        return onirimService.drawCardFromDeck(gameDTO);
+    @PutMapping(path = ONIRIM_PATH_ID + "/drawCardFromDeck")
+    public ResponseEntity drawCardFromDeck(@PathVariable(value = "id") UUID id) {
+        onirimService.drawCardFromDeck(id);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     public GameDTO discardKeyCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {

@@ -52,9 +52,7 @@ public class OnirimService2Impl implements IOnirimService {
     }
 
     @Override
-    public GameDTO drawCardFromDeck(GameDTO gameDTO) {
-        return null;
-    }
+    public void drawCardFromDeck(UUID id) { }
 
     @Override
     public GameDTO discardKeyCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {

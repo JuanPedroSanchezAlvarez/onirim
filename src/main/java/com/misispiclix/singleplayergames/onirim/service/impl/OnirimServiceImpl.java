@@ -70,6 +70,8 @@ public class OnirimServiceImpl implements IOnirimService {
         validatePlayedCardIndex(gameDTO, playedCardIndex);
         // We check that the chosen card has a different symbol than the last played.
         validateDifferentSymbol(gameDTO, playedCardIndex);
+        // We remove the current allowed actions.
+        gameDTO.getAllowedActions().clear();
         // We play the chosen card.
         playCard(gameDTO, playedCardIndex);
         // We check that the card just played is the third consecutive card of the same color.
@@ -77,10 +79,8 @@ public class OnirimServiceImpl implements IOnirimService {
             // We look for a door card of that same color and play it.
             discoverDoor(gameDTO);
         }
-        // We remove the current allowed actions.
-        gameDTO.getAllowedActions().clear();
-        // We check if all the door cards have been discovered.
-        if (!validateAllDoorsDiscovered(gameDTO)) {
+        // We check that all the door cards have not been discovered yet.
+        if (validateAllDoorsNotDiscovered(gameDTO)) {
             // We must draw a card as the next allowed action.
             gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
         }
@@ -136,18 +136,29 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public GameDTO drawCardFromDeck(GameDTO gameDTO) {
+    public void drawCardFromDeck(UUID id) {
+        // We look for the game in the database.
+        GameDTO gameDTO = getGameById(id).orElseThrow(GameNotFoundException::new);
         // We check that the action is allowed.
         validateAllowedAction(gameDTO, AllowedAction.DRAW_CARD_FROM_DECK);
+        // We remove the current allowed actions.
+        gameDTO.getAllowedActions().clear();
         // We check that the main deck is not empty.
-        if (!validateCardDeckNotEmpty(gameDTO)) { return gameDTO; }
-        // We draw a card from the main deck.
-        drawCard(gameDTO);
-        // We check the type of card that has been drawn and act accordingly.
-        checkTypeOfCardDrawn(gameDTO);
-        // We check if all the door cards have been discovered.
-        validateAllDoorsDiscovered(gameDTO);
-        return gameDTO;
+        if (validateCardDeckNotEmpty(gameDTO)) {
+            // We draw a card from the main deck.
+            drawCard(gameDTO);
+            // We check the type of card that has been drawn and act accordingly.
+            checkTypeOfCardDrawn(gameDTO);
+            // We check if all the door cards have not been discovered yet.
+            if (validateAllDoorsNotDiscovered(gameDTO)) {
+                // We check if there are no allowed actions available.
+                if (gameDTO.getAllowedActions().isEmpty()) {
+                    gameDTO.setMessageToDisplay("Game Over. YOU LOSE.");
+                }
+            }
+        }
+        // We save the game in the database.
+        saveGame(gameDTO);
     }
 
     @Override
@@ -350,7 +361,6 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private void checkPlayerHandSizeAndSetAllowedActions(GameDTO gameDTO) {
-        gameDTO.getAllowedActions().clear();
         if (gameDTO.getBoard().getPlayerHand().size() >= 5) {
             gameDTO.getAllowedActions().add(AllowedAction.PLAY_CARD_FROM_HAND);
             gameDTO.getAllowedActions().add(AllowedAction.DISCARD_CARD_FROM_HAND);
@@ -382,7 +392,6 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private void nightmareCardDrawnAction(GameDTO gameDTO) {
-        gameDTO.getAllowedActions().clear();
         for (CardDTO cardDTO : gameDTO.getBoard().getPlayerHand()) {
             if (cardDTO instanceof LabyrinthCardDTO labyrinthCard && labyrinthCard.getSymbol().equals(Symbol.KEY)) {
                 gameDTO.getAllowedActions().add(AllowedAction.DISCARD_KEY_CARD_FROM_HAND);
@@ -397,9 +406,6 @@ public class OnirimServiceImpl implements IOnirimService {
             if (gameDTO.getBoard().getCardDeck().size() >= 5) {
                 gameDTO.getAllowedActions().add(AllowedAction.DISCARD_PLAYER_HAND);
             }
-        }
-        if (gameDTO.getAllowedActions().isEmpty()) {
-            gameDTO.setMessageToDisplay("Game Over. YOU LOSE.");
         }
     }
 
@@ -464,9 +470,9 @@ public class OnirimServiceImpl implements IOnirimService {
         return gameDTO.getMessageToDisplay().isEmpty();
     }
 
-    private boolean validateAllDoorsDiscovered(GameDTO gameDTO) {
+    private boolean validateAllDoorsNotDiscovered(GameDTO gameDTO) {
         gameDTO.setMessageToDisplay(gameDTO.getBoard().getDiscoveredDoors().size() == 8 ? "Game Over. YOU WIN." : "");
-        return !gameDTO.getMessageToDisplay().isEmpty();
+        return gameDTO.getMessageToDisplay().isEmpty();
     }
 
 }

@@ -16,7 +16,7 @@ public interface IOnirimService {
     GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex);
     GameDTO activateProphecy(GameDTO gameDTO);
     GameDTO confirmProphecy(GameDTO gameDTO, Integer discardedCardIndex, List<Integer> reorderedCardIndexes);
-    GameDTO drawCardFromDeck(GameDTO gameDTO);
+    void drawCardFromDeck(UUID id);
     GameDTO discardKeyCardFromHand(GameDTO gameDTO, Integer discardedCardIndex);
     GameDTO loseDoorCard(GameDTO gameDTO, Integer doorCardIndex);
     GameDTO discardTopCardsFromDeck(GameDTO gameDTO);

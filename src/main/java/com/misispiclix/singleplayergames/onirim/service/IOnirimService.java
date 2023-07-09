@@ -13,12 +13,12 @@ public interface IOnirimService {
     UUID createNewGame();
     GameDTO saveGame(GameDTO gameDTO);
     void playCardFromHand(UUID id, Integer playedCardIndex);
-    GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex);
-    GameDTO activateProphecy(GameDTO gameDTO);
+    void discardCardFromHand(UUID id, Integer discardedCardIndex);
+    void activateProphecy(UUID id);
     GameDTO confirmProphecy(GameDTO gameDTO, Integer discardedCardIndex, List<Integer> reorderedCardIndexes);
     void drawCardFromDeck(UUID id);
-    GameDTO discardKeyCardFromHand(GameDTO gameDTO, Integer discardedCardIndex);
-    GameDTO loseDoorCard(GameDTO gameDTO, Integer doorCardIndex);
+    void discardKeyCardFromHand(UUID id, Integer discardedCardIndex);
+    void loseDoorCard(UUID id, Integer doorCardIndex);
     GameDTO discardTopCardsFromDeck(GameDTO gameDTO);
     GameDTO discardPlayerHand(GameDTO gameDTO);
 

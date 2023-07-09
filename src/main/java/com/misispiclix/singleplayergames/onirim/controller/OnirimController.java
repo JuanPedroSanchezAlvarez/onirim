@@ -28,27 +28,27 @@ public class OnirimController {
         return onirimService.playCardFromHand(gameDTO, playedCardIndex);
     }*/
 
-    public GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
+    /*public GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
         return onirimService.discardCardFromHand(gameDTO, discardedCardIndex);
-    }
+    }*/
 
-    public GameDTO activateProphecy(GameDTO gameDTO) {
+    /*public GameDTO activateProphecy(GameDTO gameDTO) {
         return onirimService.activateProphecy(gameDTO);
-    }
+    }*/
 
-    public GameDTO confirmProphecy(GameDTO gameDTO, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
+    /*public GameDTO confirmProphecy(GameDTO gameDTO, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
         return onirimService.confirmProphecy(gameDTO, discardedCardIndex, reorderedCardIndexes);
-    }
+    }*/
 
-    public GameDTO drawCardFromDeck(GameDTO gameDTO) {
+    /*public GameDTO drawCardFromDeck(GameDTO gameDTO) {
         return onirimService.drawCardFromDeck(gameDTO);
-    }
+    }*/
 
-    public GameDTO discardKeyCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
+    /*public GameDTO discardKeyCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
         return onirimService.discardKeyCardFromHand(gameDTO, discardedCardIndex);
-    }
+    }*/
 
-    public GameDTO loseDoorCard(GameDTO gameDTO, Integer doorCardIndex) {
+    /*public GameDTO loseDoorCard(GameDTO gameDTO, Integer doorCardIndex) {
         return onirimService.loseDoorCard(gameDTO, doorCardIndex);
     }
 
@@ -58,6 +58,6 @@ public class OnirimController {
 
     public GameDTO discardPlayerHand(GameDTO gameDTO) {
         return onirimService.discardPlayerHand(gameDTO);
-    }
+    }*/
 
 }

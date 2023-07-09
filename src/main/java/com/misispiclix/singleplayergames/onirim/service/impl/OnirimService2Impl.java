@@ -37,14 +37,10 @@ public class OnirimService2Impl implements IOnirimService {
     public void playCardFromHand(UUID id, Integer playedCardIndex) { }
 
     @Override
-    public GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
-        return null;
-    }
+    public void discardCardFromHand(UUID id, Integer discardedCardIndex) { }
 
     @Override
-    public GameDTO activateProphecy(GameDTO gameDTO) {
-        return null;
-    }
+    public void activateProphecy(UUID id) { }
 
     @Override
     public GameDTO confirmProphecy(GameDTO gameDTO, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
@@ -55,14 +51,10 @@ public class OnirimService2Impl implements IOnirimService {
     public void drawCardFromDeck(UUID id) { }
 
     @Override
-    public GameDTO discardKeyCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
-        return null;
-    }
+    public void discardKeyCardFromHand(UUID id, Integer discardedCardIndex) { }
 
     @Override
-    public GameDTO loseDoorCard(GameDTO gameDTO, Integer doorCardIndex) {
-        return null;
-    }
+    public void loseDoorCard(UUID id, Integer doorCardIndex) { }
 
     @Override
     public GameDTO discardTopCardsFromDeck(GameDTO gameDTO) {

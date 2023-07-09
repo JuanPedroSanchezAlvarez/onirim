@@ -89,15 +89,18 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
+    public void discardCardFromHand(UUID id, Integer discardedCardIndex) {
+        // We look for the game in the database.
+        GameDTO gameDTO = getGameById(id).orElseThrow(GameNotFoundException::new);
         // We check that the action is allowed.
         validateAllowedAction(gameDTO, AllowedAction.DISCARD_CARD_FROM_HAND);
         // We check that the chosen card exists in the hand.
-        //if (!validatePlayedCardIndex(gameDTO, discardedCardIndex)) { return gameDTO; }
+        validatePlayedCardIndex(gameDTO, discardedCardIndex);
         // We discard the chosen card.
         discardCard(gameDTO, discardedCardIndex);
-        // We check that the discarded card has the key symbol.
+        // We remove the current allowed actions.
         gameDTO.getAllowedActions().clear();
+        // We check that the discarded card has the key symbol.
         if (validateDiscardedCardHasKeySymbol(gameDTO.getBoard().getDiscardedCards().get(gameDTO.getBoard().getDiscardedCards().size() - 1))
                 && !gameDTO.getBoard().getCardDeck().isEmpty()) {
             // We must activate a prophecy.
@@ -106,19 +109,23 @@ public class OnirimServiceImpl implements IOnirimService {
             // We must draw a card.
             gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
         }
-        return gameDTO;
+        // We save the game in the database.
+        saveGame(gameDTO);
     }
 
     @Override
-    public GameDTO activateProphecy(GameDTO gameDTO) {
+    public void activateProphecy(UUID id) {
+        // We look for the game in the database.
+        GameDTO gameDTO = getGameById(id).orElseThrow(GameNotFoundException::new);
         // We check that the action is allowed.
         validateAllowedAction(gameDTO, AllowedAction.ACTIVATE_PROPHECY);
         // We show the prophecy cards.
         showProphecyCards(gameDTO);
-        // We must confirm the prophecy.
+        // We must confirm the prophecy as the next action.
         gameDTO.getAllowedActions().clear();
         gameDTO.getAllowedActions().add(AllowedAction.CONFIRM_PROPHECY);
-        return gameDTO;
+        // We save the game in the database.
+        saveGame(gameDTO);
     }
 
     @Override
@@ -162,31 +169,37 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public GameDTO discardKeyCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
+    public void discardKeyCardFromHand(UUID id, Integer discardedCardIndex) {
+        // We look for the game in the database.
+        GameDTO gameDTO = getGameById(id).orElseThrow(GameNotFoundException::new);
         // We check that the action is allowed.
         validateAllowedAction(gameDTO, AllowedAction.DISCARD_KEY_CARD_FROM_HAND);
         // We check that the chosen card exists in the hand.
-        //if (!validatePlayedCardIndex(gameDTO, discardedCardIndex)) { return gameDTO; }
+        validatePlayedCardIndex(gameDTO, discardedCardIndex);
         // We check that the chosen card is a key card.
-        if (!validateChosenCardIsKeyCard(gameDTO, discardedCardIndex)) { return gameDTO; }
+        validateChosenCardIsKeyCard(gameDTO, discardedCardIndex);
         // We discard the chosen key card from hand.
         gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getPlayerHand().remove(discardedCardIndex.intValue()));
         // We set the next allowed actions.
         checkPlayerHandSizeAndSetAllowedActions(gameDTO);
-        return gameDTO;
+        // We save the game in the database.
+        saveGame(gameDTO);
     }
 
     @Override
-    public GameDTO loseDoorCard(GameDTO gameDTO, Integer doorCardIndex) {
+    public void loseDoorCard(UUID id, Integer doorCardIndex) {
+        // We look for the game in the database.
+        GameDTO gameDTO = getGameById(id).orElseThrow(GameNotFoundException::new);
         // We check that the action is allowed.
         validateAllowedAction(gameDTO, AllowedAction.LOSE_DOOR_CARD);
         // We check that the chosen door card exists in the discovered doors zone.
-        if (!validateDiscardedDoorIndex(gameDTO, doorCardIndex)) { return gameDTO; }
+        validateDiscardedDoorIndex(gameDTO, doorCardIndex);
         // We move the chosen door card to the limbo stack.
         gameDTO.getBoard().getLimboStack().add(gameDTO.getBoard().getDiscoveredDoors().remove(doorCardIndex.intValue()));
         // We set the next allowed actions.
         checkPlayerHandSizeAndSetAllowedActions(gameDTO);
-        return gameDTO;
+        // We save the game in the database.
+        saveGame(gameDTO);
     }
 
     @Override
@@ -421,9 +434,10 @@ public class OnirimServiceImpl implements IOnirimService {
         }
     }
 
-    private boolean validateDiscardedDoorIndex(GameDTO gameDTO, Integer doorCardIndex) {
-        gameDTO.setMessageToDisplay(doorCardIndex > -1 && doorCardIndex < gameDTO.getBoard().getDiscoveredDoors().size() ? "" : "Selected door is not discovered.");
-        return gameDTO.getMessageToDisplay().isEmpty();
+    private void validateDiscardedDoorIndex(GameDTO gameDTO, Integer doorCardIndex) {
+        if (doorCardIndex < 0 || doorCardIndex > (gameDTO.getBoard().getDiscoveredDoors().size() - 1)) {
+            throw new InvalidCardIndexException("The card index must be between '0' and '" + (gameDTO.getBoard().getDiscoveredDoors().size() - 1) + "' .");
+        }
     }
 
     private void validateDifferentSymbol(GameDTO gameDTO, Integer playedCardIndex) {
@@ -460,14 +474,14 @@ public class OnirimServiceImpl implements IOnirimService {
         return gameDTO.getMessageToDisplay().isEmpty();
     }
 
-    private boolean validateChosenCardIsKeyCard(GameDTO gameDTO, Integer discardedCardIndex) {
-        if (gameDTO.getBoard().getPlayerHand().get(discardedCardIndex) instanceof LabyrinthCardDTO discardedLabyrinthCard
-                && discardedLabyrinthCard.getSymbol().equals(Symbol.KEY)) {
-            gameDTO.setMessageToDisplay("");
+    private void validateChosenCardIsKeyCard(GameDTO gameDTO, Integer discardedCardIndex) {
+        if (gameDTO.getBoard().getPlayerHand().get(discardedCardIndex) instanceof LabyrinthCardDTO discardedLabyrinthCard) {
+            if (!discardedLabyrinthCard.getSymbol().equals(Symbol.KEY)) {
+                throw new NotAKeyCardException("The selected card is not a Key Card.");
+            }
         } else {
-            gameDTO.setMessageToDisplay("Selected card is not a KEY card.");
+            throw new NotALabyrinthCardException("The selected card is not a Labyrinth Card.");
         }
-        return gameDTO.getMessageToDisplay().isEmpty();
     }
 
     private boolean validateAllDoorsNotDiscovered(GameDTO gameDTO) {

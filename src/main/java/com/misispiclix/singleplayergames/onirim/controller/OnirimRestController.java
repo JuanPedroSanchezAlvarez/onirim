@@ -54,12 +54,16 @@ public class OnirimRestController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    public GameDTO discardCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
-        return onirimService.discardCardFromHand(gameDTO, discardedCardIndex);
+    @PutMapping(path = ONIRIM_PATH_ID + "/discardCardFromHand")
+    public ResponseEntity discardCardFromHand(@PathVariable(value = "id") UUID id, @RequestBody Integer discardedCardIndex) {
+        onirimService.discardCardFromHand(id, discardedCardIndex);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
-    public GameDTO activateProphecy(GameDTO gameDTO) {
-        return onirimService.activateProphecy(gameDTO);
+    @PutMapping(path = ONIRIM_PATH_ID + "/activateProphecy")
+    public ResponseEntity activateProphecy(@PathVariable(value = "id") UUID id) {
+        onirimService.activateProphecy(id);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     public GameDTO confirmProphecy(GameDTO gameDTO, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
@@ -72,12 +76,16 @@ public class OnirimRestController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    public GameDTO discardKeyCardFromHand(GameDTO gameDTO, Integer discardedCardIndex) {
-        return onirimService.discardKeyCardFromHand(gameDTO, discardedCardIndex);
+    @PutMapping(path = ONIRIM_PATH_ID + "/discardKeyCardFromHand")
+    public ResponseEntity discardKeyCardFromHand(@PathVariable(value = "id") UUID id, @RequestBody Integer discardedCardIndex) {
+        onirimService.discardKeyCardFromHand(id, discardedCardIndex);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
-    public GameDTO loseDoorCard(GameDTO gameDTO, Integer doorCardIndex) {
-        return onirimService.loseDoorCard(gameDTO, doorCardIndex);
+    @PutMapping(path = ONIRIM_PATH_ID + "/loseDoorCard")
+    public ResponseEntity loseDoorCard(@PathVariable(value = "id") UUID id, @RequestBody Integer doorCardIndex) {
+        onirimService.loseDoorCard(id, doorCardIndex);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     public GameDTO discardTopCardsFromDeck(GameDTO gameDTO) {

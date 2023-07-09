@@ -129,17 +129,20 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public GameDTO confirmProphecy(GameDTO gameDTO, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
+    public void confirmProphecy(UUID id, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
+        // We look for the game in the database.
+        GameDTO gameDTO = getGameById(id).orElseThrow(GameNotFoundException::new);
         // We check that the action is allowed.
         validateAllowedAction(gameDTO, AllowedAction.CONFIRM_PROPHECY);
         // We discard the chosen card.
         gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getCardsToShow().get(discardedCardIndex));
         // We rearrange the top cards of the main deck in the chosen order.
         rearrangeTopCardsOfTheCardDeck(gameDTO, reorderedCardIndexes);
-        // We must draw a card.
+        // We must draw a card as the next action.
         gameDTO.getAllowedActions().clear();
         gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
-        return gameDTO;
+        // We save the game in the database.
+        saveGame(gameDTO);
     }
 
     @Override
@@ -203,7 +206,9 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
-    public GameDTO discardTopCardsFromDeck(GameDTO gameDTO) {
+    public void discardTopCardsFromDeck(UUID id) {
+        // We look for the game in the database.
+        GameDTO gameDTO = getGameById(id).orElseThrow(GameNotFoundException::new);
         // We check that the action is allowed.
         validateAllowedAction(gameDTO, AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
         // We discard the top cards from the main deck.
@@ -217,11 +222,14 @@ public class OnirimServiceImpl implements IOnirimService {
         }
         // We set the next allowed actions.
         checkPlayerHandSizeAndSetAllowedActions(gameDTO);
-        return gameDTO;
+        // We save the game in the database.
+        saveGame(gameDTO);
     }
 
     @Override
-    public GameDTO discardPlayerHand(GameDTO gameDTO) {
+    public void discardPlayerHand(UUID id) {
+        // We look for the game in the database.
+        GameDTO gameDTO = getGameById(id).orElseThrow(GameNotFoundException::new);
         // We check that the action is allowed.
         validateAllowedAction(gameDTO, AllowedAction.DISCARD_PLAYER_HAND);
         // We discard the entire player hand.
@@ -232,7 +240,8 @@ public class OnirimServiceImpl implements IOnirimService {
         initializePlayerHand(gameDTO);
         // We set the next allowed actions.
         checkPlayerHandSizeAndSetAllowedActions(gameDTO);
-        return gameDTO;
+        // We save the game in the database.
+        saveGame(gameDTO);
     }
 
 

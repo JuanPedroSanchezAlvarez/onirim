@@ -66,8 +66,10 @@ public class OnirimRestController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    public GameDTO confirmProphecy(GameDTO gameDTO, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
-        return onirimService.confirmProphecy(gameDTO, discardedCardIndex, reorderedCardIndexes);
+    @PutMapping(path = ONIRIM_PATH_ID + "/confirmProphecy")
+    public ResponseEntity confirmProphecy(@PathVariable(value = "id") UUID id, @RequestBody Integer discardedCardIndex, @RequestBody List<Integer> reorderedCardIndexes) {
+        onirimService.confirmProphecy(id, discardedCardIndex, reorderedCardIndexes);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @PutMapping(path = ONIRIM_PATH_ID + "/drawCardFromDeck")
@@ -88,12 +90,16 @@ public class OnirimRestController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    public GameDTO discardTopCardsFromDeck(GameDTO gameDTO) {
-        return onirimService.discardTopCardsFromDeck(gameDTO);
+    @PutMapping(path = ONIRIM_PATH_ID + "/discardTopCardsFromDeck")
+    public ResponseEntity discardTopCardsFromDeck(@PathVariable(value = "id") UUID id) {
+        onirimService.discardTopCardsFromDeck(id);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
-    public GameDTO discardPlayerHand(GameDTO gameDTO) {
-        return onirimService.discardPlayerHand(gameDTO);
+    @PutMapping(path = ONIRIM_PATH_ID + "/discardPlayerHand")
+    public ResponseEntity discardPlayerHand(@PathVariable(value = "id") UUID id) {
+        onirimService.discardPlayerHand(id);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
 

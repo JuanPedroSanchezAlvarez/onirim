@@ -6,8 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "400 - Not a Key Card.")
 public class NotAKeyCardException extends RuntimeException {
 
-    public NotAKeyCardException() {
-    }
+    public NotAKeyCardException() { }
 
     public NotAKeyCardException(String message) {
         super(message);
@@ -23,6 +22,11 @@ public class NotAKeyCardException extends RuntimeException {
 
     public NotAKeyCardException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
+    }
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+        return this;
     }
 
 }

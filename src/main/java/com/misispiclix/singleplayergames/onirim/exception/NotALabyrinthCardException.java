@@ -6,8 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "400 - Not a Labyrinth Card.")
 public class NotALabyrinthCardException extends RuntimeException {
 
-    public NotALabyrinthCardException() {
-    }
+    public NotALabyrinthCardException() { }
 
     public NotALabyrinthCardException(String message) {
         super(message);
@@ -23,6 +22,11 @@ public class NotALabyrinthCardException extends RuntimeException {
 
     public NotALabyrinthCardException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
+    }
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+        return this;
     }
 
 }

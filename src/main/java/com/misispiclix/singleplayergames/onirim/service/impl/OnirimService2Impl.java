@@ -1,6 +1,5 @@
 package com.misispiclix.singleplayergames.onirim.service.impl;
 
-import com.misispiclix.singleplayergames.onirim.domain.Game;
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
 import org.springframework.data.domain.Page;
@@ -59,26 +58,5 @@ public class OnirimService2Impl implements IOnirimService {
 
     @Override
     public void discardPlayerHand(UUID id) { }
-
-
-    @Override
-    public GameDTO createExample(GameDTO gameDTO) {
-        return null;
-    }
-
-    @Override
-    public Optional<GameDTO> updateExample(UUID id, GameDTO gameDTO) {
-        return Optional.empty();
-    }
-
-    @Override
-    public void updateExamplePatch(UUID id, GameDTO gameDTO) {
-
-    }
-
-    @Override
-    public Boolean deleteExample(UUID id) {
-        return null;
-    }
 
 }

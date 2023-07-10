@@ -12,6 +12,7 @@ public interface IOnirimService {
     Optional<GameDTO> getGameById(UUID id);
     UUID createNewGame();
     GameDTO saveGame(GameDTO gameDTO);
+
     void playCardFromHand(UUID id, Integer playedCardIndex);
     void discardCardFromHand(UUID id, Integer discardedCardIndex);
     void activateProphecy(UUID id);
@@ -23,8 +24,8 @@ public interface IOnirimService {
     void discardPlayerHand(UUID id);
 
 
-    GameDTO createExample(GameDTO gameDTO);
+    /*GameDTO createExample(GameDTO gameDTO);
     Optional<GameDTO> updateExample(UUID id, GameDTO gameDTO);
     void updateExamplePatch(UUID id, GameDTO gameDTO);
-    Boolean deleteExample(UUID id);
+    Boolean deleteExample(UUID id);*/
 }

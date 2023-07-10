@@ -1,6 +1,5 @@
 package com.misispiclix.singleplayergames.onirim.service.impl;
 
-import com.misispiclix.singleplayergames.onirim.domain.Game;
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
 import com.misispiclix.singleplayergames.onirim.dto.card.CardDTO;
 import com.misispiclix.singleplayergames.onirim.dto.card.DoorCardDTO;
@@ -22,7 +21,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -245,20 +243,20 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
 
-    @Override
+    /*@Override
     public GameDTO createExample(GameDTO gameDTO) {
         return onirimMapper.gameToGameDto(onirimRepository.save(onirimMapper.gameDtoToGame(gameDTO)));
-    }
+    }*/
 
-    @Override
-    public Optional<GameDTO> updateExample(UUID id, GameDTO gameDTO) {
+    /*@Override
+    public Optional<GameDTO> updateExample(UUID id, GameDTO gameDTO) {*/
         //onirimRepository.findById(id).ifPresent(onirimRepository::save);
         /*Game existingGame = onirimRepository.findById(id).orElse(null);
         if (null != existingGame) {
             // Map game to existingGame.
             onirimRepository.save(existingGame);
         }*/
-        AtomicReference<Optional<GameDTO>> atomicReference = new AtomicReference<>();
+        /*AtomicReference<Optional<GameDTO>> atomicReference = new AtomicReference<>();
         onirimRepository.findById(id).ifPresentOrElse(foundGame -> {
             foundGame.setMessageToDisplay("UPDATED");
             atomicReference.set(Optional.of(onirimMapper.gameToGameDto(onirimRepository.save(foundGame))));
@@ -266,9 +264,9 @@ public class OnirimServiceImpl implements IOnirimService {
             atomicReference.set(Optional.empty());
         });
         return atomicReference.get();
-    }
+    }*/
 
-    @Override
+    /*@Override
     public void updateExamplePatch(UUID id, GameDTO gameDTO) {
         //onirimRepository.findById(id).ifPresent(onirimRepository::save);
         Game existingGame = onirimRepository.findById(id).orElse(null);
@@ -285,7 +283,7 @@ public class OnirimServiceImpl implements IOnirimService {
             return true;
         }
         return false;
-    }
+    }*/
 
     private void initializeCardDeck(GameDTO gameDTO) {
         for (int i = 0; i < 10; i++) { gameDTO.getBoard().getCardDeck().add(new NightmareCardDTO()); }
@@ -439,13 +437,13 @@ public class OnirimServiceImpl implements IOnirimService {
 
     private void validatePlayedCardIndex(GameDTO gameDTO, Integer playedCardIndex) {
         if (playedCardIndex < 0 || playedCardIndex > (gameDTO.getBoard().getPlayerHand().size() - 1)) {
-            throw new InvalidCardIndexException("The card index must be between '0' and '" + (gameDTO.getBoard().getPlayerHand().size() - 1) + "' .");
+            throw new InvalidCardIndexException("The card index must be between '0' and '" + (gameDTO.getBoard().getPlayerHand().size() - 1) + "'.");
         }
     }
 
     private void validateDiscardedDoorIndex(GameDTO gameDTO, Integer doorCardIndex) {
         if (doorCardIndex < 0 || doorCardIndex > (gameDTO.getBoard().getDiscoveredDoors().size() - 1)) {
-            throw new InvalidCardIndexException("The card index must be between '0' and '" + (gameDTO.getBoard().getDiscoveredDoors().size() - 1) + "' .");
+            throw new InvalidCardIndexException("The card index must be between '0' and '" + (gameDTO.getBoard().getDiscoveredDoors().size() - 1) + "'.");
         }
     }
 

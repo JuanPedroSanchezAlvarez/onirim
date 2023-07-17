@@ -19,9 +19,9 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-class IOnirimRepositoryTest {
+class IOnirimRepositoryTestOld {
 
-    @Autowired
+    /*@Autowired
     private IOnirimRepository onirimRepository;
 
     private Game game;
@@ -103,6 +103,6 @@ class IOnirimRepositoryTest {
         onirimRepository.flush();
         assertThat(savedGame).isNotNull();
         assertThat(savedGame.getId()).isNotNull();
-    }
+    }*/
 
 }

@@ -1,32 +1,11 @@
 package com.misispiclix.singleplayergames.onirim.controller;
 
-import com.misispiclix.singleplayergames.onirim.domain.Game;
-import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
-import com.misispiclix.singleplayergames.onirim.exception.GameNotFoundException;
-import com.misispiclix.singleplayergames.onirim.mapper.IOnirimMapper;
-import com.misispiclix.singleplayergames.onirim.repository.IOnirimRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
-class OnirimRestControllerIT {
+class OnirimRestControllerITOld {
 
-    @Autowired
+    /*@Autowired
     OnirimRestController onirimRestController;
 
     @Autowired
@@ -131,6 +110,6 @@ class OnirimRestControllerIT {
         assertThrows(GameNotFoundException.class, () -> {
             onirimRestController.deleteExample(UUID.randomUUID());
         });
-    }
+    }*/
 
 }

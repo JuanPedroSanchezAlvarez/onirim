@@ -51,15 +51,15 @@ class OnirimServiceTest {
         assertThat(optionalOfGameDto).isNotEmpty();
         GameDTO gameDTO = optionalOfGameDto.get();
         // VERIFICATION
-        // El mazo debe tener 71 cartas.
+        // The card deck must have 71 cards.
         assertThat(gameDTO.getBoard().getCardDeck().size()).isEqualTo(71);
-        // La mano debe tener 5 cartas.
+        // The player hand must have 5 cards.
         assertThat(gameDTO.getBoard().getPlayerHand().size()).isEqualTo(5);
-        // Las 5 cartas de la mano deben ser de laberinto.
+        // The 5 cards of the player hand must be Labyrinth cards.
         gameDTO.getBoard().getPlayerHand().forEach(card -> {
             assertEquals(card.getClass(), LabyrinthCardDTO.class);
         });
-        // Las demás zonas deben estar vacías.
+        // The other zones must be empty.
         assertThat(gameDTO.getBoard().getCardsToShow().isEmpty());
         assertThat(gameDTO.getBoard().getDiscardedCards().isEmpty());
         assertThat(gameDTO.getBoard().getDiscoveredDoors().isEmpty());

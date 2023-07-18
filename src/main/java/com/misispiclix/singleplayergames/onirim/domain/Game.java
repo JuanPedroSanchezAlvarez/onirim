@@ -1,6 +1,7 @@
 package com.misispiclix.singleplayergames.onirim.domain;
 
 import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
+import com.misispiclix.singleplayergames.onirim.enums.GameStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -25,6 +26,10 @@ public class Game extends BaseEntity {
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "allowed_actions")
     private List<AllowedAction> allowedActions;
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "game_status")
+    private GameStatus gameStatus;
 
     @Column(name = "message_to_display")
     private String messageToDisplay;

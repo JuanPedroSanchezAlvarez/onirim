@@ -30,6 +30,7 @@ public class Game extends BaseEntity {
     private String messageToDisplay;
 
     @CreationTimestamp
+    @Column(updatable = false, nullable = false)
     private LocalDateTime created;
 
     @UpdateTimestamp

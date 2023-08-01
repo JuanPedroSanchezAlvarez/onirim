@@ -7,6 +7,7 @@ import com.misispiclix.singleplayergames.onirim.dto.card.LabyrinthCardDTO;
 import com.misispiclix.singleplayergames.onirim.dto.card.NightmareCardDTO;
 import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
 import com.misispiclix.singleplayergames.onirim.enums.Color;
+import com.misispiclix.singleplayergames.onirim.enums.GameStatus;
 import com.misispiclix.singleplayergames.onirim.enums.Symbol;
 import com.misispiclix.singleplayergames.onirim.exception.*;
 import com.misispiclix.singleplayergames.onirim.mapper.IOnirimMapper;
@@ -50,6 +51,7 @@ public class OnirimServiceImpl implements IOnirimService {
         initializeCardDeck(gameDTO);
         initializePlayerHand(gameDTO);
         checkPlayerHandSizeAndSetAllowedActions(gameDTO);
+        gameDTO.setGameStatus(GameStatus.PLAYING);
         return saveGame(gameDTO).getId();
     }
 
@@ -81,6 +83,9 @@ public class OnirimServiceImpl implements IOnirimService {
         if (validateAllDoorsNotDiscovered(gameDTO)) {
             // We must draw a card as the next allowed action.
             gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        } else {
+            // We must finish the game.
+            gameDTO.setGameStatus(GameStatus.FINISHED);
         }
         // We save the game in the database.
         saveGame(gameDTO);

@@ -96,7 +96,6 @@ class OnirimServiceTest {
         gameDTO.getBoard().getPlayedCards().add(new LabyrinthCardDTO(Color.BLUE, Symbol.SUN));
         gameDTO.getBoard().getPlayedCards().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.KEY));
         gameDTO.getBoard().getPlayedCards().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.MOON));
-        gameDTO.getBoard().getDiscoveredDoors().add(new DoorCardDTO(Color.RED));
         gameDTO.getAllowedActions().add(AllowedAction.PLAY_CARD_FROM_HAND);
         if (allDoorsDiscovered) {
             gameDTO.getBoard().getDiscoveredDoors().add(new DoorCardDTO(Color.YELLOW));
@@ -193,8 +192,69 @@ class OnirimServiceTest {
         assertThat(gameDTO.getGameStatus()).isEqualTo(GameStatus.FINISHED);
     }
 
+    private UUID discardCardFromHand_Preparation() {
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.RED, Symbol.KEY));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.RED, Symbol.MOON));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.GREEN, Symbol.MOON));
+        gameDTO.getBoard().getPlayerHand().add(new DoorCardDTO(Color.GREEN));
+        gameDTO.getBoard().getPlayedCards().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getPlayedCards().add(new LabyrinthCardDTO(Color.BLUE, Symbol.MOON));
+        gameDTO.getBoard().getPlayedCards().add(new LabyrinthCardDTO(Color.BLUE, Symbol.SUN));
+        gameDTO.getBoard().getPlayedCards().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.KEY));
+        gameDTO.getBoard().getPlayedCards().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.MOON));
+        gameDTO.getBoard().getDiscoveredDoors().add(new DoorCardDTO(Color.RED));
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.SUN));
+        gameDTO.getAllowedActions().add(AllowedAction.DISCARD_CARD_FROM_HAND);
+        return onirimService.saveGame(gameDTO).getId();
+    }
+
     @Test
-    void discardCardFromHand() {
+    void discardCardFromHand_InvalidCardIndexException() {
+        // PREPARATION
+        UUID id = discardCardFromHand_Preparation();
+        // EXECUTION
+        // VERIFICATION
+        assertThrows(InvalidCardIndexException.class, () -> { onirimService.discardCardFromHand(id, 5); } );
+    }
+
+    @Test
+    void discardCardFromHand_DiscardedCardHasKeySymbol() {
+        // PREPARATION
+        UUID id = discardCardFromHand_Preparation();
+        // EXECUTION
+        onirimService.discardCardFromHand(id, 0);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        GameDTO gameDTO = onirimService.getGameById(id).get();
+        // The player hand must have 4 cards.
+        assertThat(gameDTO.getBoard().getPlayerHand().size()).isEqualTo(4);
+        // The next allowed action must be to activate a prophecy.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.ACTIVATE_PROPHECY);
+        // We must have one discarded card.
+        assertThat(gameDTO.getBoard().getDiscardedCards().size()).isEqualTo(1);
+    }
+
+    @Test
+    void discardCardFromHand_DiscardedCardHasNotKeySymbol() {
+        // PREPARATION
+        UUID id = discardCardFromHand_Preparation();
+        // EXECUTION
+        onirimService.discardCardFromHand(id, 1);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        GameDTO gameDTO = onirimService.getGameById(id).get();
+        // The player hand must have 4 cards.
+        assertThat(gameDTO.getBoard().getPlayerHand().size()).isEqualTo(4);
+        // The next allowed action must be to draw a card.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DRAW_CARD_FROM_DECK);
+        // We must have one discarded card.
+        assertThat(gameDTO.getBoard().getDiscardedCards().size()).isEqualTo(1);
     }
 
     @Test

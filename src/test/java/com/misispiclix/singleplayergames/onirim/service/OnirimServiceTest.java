@@ -257,8 +257,32 @@ class OnirimServiceTest {
         assertThat(gameDTO.getBoard().getDiscardedCards().size()).isEqualTo(1);
     }
 
+    private UUID activateProphecy_Preparation() {
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.SUN));
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.RED, Symbol.KEY));
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.GREEN, Symbol.MOON));
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.MOON));
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.SUN));
+        gameDTO.getAllowedActions().add(AllowedAction.ACTIVATE_PROPHECY);
+        return onirimService.saveGame(gameDTO).getId();
+    }
+
     @Test
     void activateProphecy() {
+        // PREPARATION
+        UUID id = activateProphecy_Preparation();
+        // EXECUTION
+        onirimService.activateProphecy(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        GameDTO gameDTO = onirimService.getGameById(id).get();
+        // The cards to show zone must have 5 cards.
+        assertThat(gameDTO.getBoard().getCardsToShow().size()).isEqualTo(5);
+        // The next allowed action must be to confirm the prophecy.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.CONFIRM_PROPHECY);
     }
 
     @Test

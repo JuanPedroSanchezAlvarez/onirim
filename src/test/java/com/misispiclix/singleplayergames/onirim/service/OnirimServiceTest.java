@@ -17,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -285,8 +286,79 @@ class OnirimServiceTest {
         assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.CONFIRM_PROPHECY);
     }
 
+    private UUID confirmProphecy_Preparation() {
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getBoard().getCardsToShow().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        gameDTO.getBoard().getCardsToShow().add(new LabyrinthCardDTO(Color.GREEN, Symbol.MOON));
+        gameDTO.getBoard().getCardsToShow().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getCardsToShow().add(new LabyrinthCardDTO(Color.YELLOW, Symbol.SUN));
+        gameDTO.getBoard().getCardsToShow().add(new LabyrinthCardDTO(Color.RED, Symbol.MOON));
+        gameDTO.getAllowedActions().add(AllowedAction.CONFIRM_PROPHECY);
+        return onirimService.saveGame(gameDTO).getId();
+    }
+
+    @Test
+    void confirmProphecy_InvalidCardIndexException_1() {
+        // PREPARATION
+        UUID id = confirmProphecy_Preparation();
+        // EXECUTION
+        // VERIFICATION
+        assertThrows(InvalidCardIndexException.class, () -> { onirimService.confirmProphecy(id, 5, List.of(1, 0, 3, 2)); } );
+    }
+
+    @Test
+    void confirmProphecy_InvalidCardIndexException_2() {
+        // PREPARATION
+        UUID id = confirmProphecy_Preparation();
+        // EXECUTION
+        // VERIFICATION
+        assertThrows(InvalidCardIndexException.class, () -> { onirimService.confirmProphecy(id, 2, List.of(1, 0, 3, 2, 4)); } );
+    }
+
+    @Test
+    void confirmProphecy_InvalidCardIndexException_3() {
+        // PREPARATION
+        UUID id = confirmProphecy_Preparation();
+        // EXECUTION
+        // VERIFICATION
+        assertThrows(InvalidCardIndexException.class, () -> { onirimService.confirmProphecy(id, 2, List.of(1, 0, 4, 2)); } );
+    }
+
+    @Test
+    void confirmProphecy_InvalidCardIndexException_4() {
+        // PREPARATION
+        UUID id = confirmProphecy_Preparation();
+        // EXECUTION
+        // VERIFICATION
+        assertThrows(InvalidCardIndexException.class, () -> { onirimService.confirmProphecy(id, 2, List.of(1, 0, 3, 0)); } );
+    }
+
     @Test
     void confirmProphecy() {
+        // PREPARATION
+        UUID id = confirmProphecy_Preparation();
+        // EXECUTION
+        onirimService.confirmProphecy(id, 2, List.of(1, 0, 3, 2));
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        GameDTO gameDTO = onirimService.getGameById(id).get();
+        // The card deck must have 4 cards.
+        assertThat(gameDTO.getBoard().getCardDeck().size()).isEqualTo(4);
+        // The discarded cards zone must have 1 card.
+        assertThat(gameDTO.getBoard().getDiscardedCards().size()).isEqualTo(1);
+        // The cards to show zone must be empty.
+        assertThat(gameDTO.getBoard().getCardsToShow()).isEmpty();
+        // The reordered cards must be in correct order.
+        assertThat(gameDTO.getBoard().getCardDeck().get(0)).isEqualTo(new LabyrinthCardDTO(Color.YELLOW, Symbol.SUN));
+        assertThat(gameDTO.getBoard().getCardDeck().get(1)).isEqualTo(new LabyrinthCardDTO(Color.RED, Symbol.MOON));
+        assertThat(gameDTO.getBoard().getCardDeck().get(2)).isEqualTo(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        assertThat(gameDTO.getBoard().getCardDeck().get(3)).isEqualTo(new LabyrinthCardDTO(Color.GREEN, Symbol.MOON));
+        // The discarded card must be correct.
+        assertThat(gameDTO.getBoard().getDiscardedCards().get(0)).isEqualTo(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        // The next allowed action must be to draw a card.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DRAW_CARD_FROM_DECK);
     }
 
     @Test

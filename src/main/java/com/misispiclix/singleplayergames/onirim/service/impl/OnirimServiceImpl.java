@@ -137,6 +137,8 @@ public class OnirimServiceImpl implements IOnirimService {
         GameDTO gameDTO = getGameById(id).orElseThrow(GameNotFoundException::new);
         // We check that the action is allowed.
         validateAllowedAction(gameDTO, AllowedAction.CONFIRM_PROPHECY);
+        // We check that the discarded card index and the reordered cards indexes are valid.
+        validateProphecyCardsIndexes(gameDTO, discardedCardIndex, reorderedCardIndexes);
         // We discard the chosen card.
         gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getCardsToShow().get(discardedCardIndex));
         // We rearrange the top cards of the main deck in the chosen order.
@@ -499,6 +501,23 @@ public class OnirimServiceImpl implements IOnirimService {
     private boolean validateAllDoorsNotDiscovered(GameDTO gameDTO) {
         gameDTO.setMessageToDisplay(gameDTO.getBoard().getDiscoveredDoors().size() == 8 ? "Game Over. YOU WIN." : "");
         return gameDTO.getMessageToDisplay().isEmpty();
+    }
+
+    private void validateProphecyCardsIndexes(GameDTO gameDTO, Integer discardedCardIndex, List<Integer> reorderedCardIndexes) {
+        if (discardedCardIndex < 0 || discardedCardIndex > (gameDTO.getBoard().getCardsToShow().size() - 1)) {
+            throw new InvalidCardIndexException("The discarded card index must be between '0' and '" + (gameDTO.getBoard().getCardsToShow().size() - 1) + "'.");
+        }
+        if ((gameDTO.getBoard().getCardsToShow().size() - 1) != reorderedCardIndexes.size()) {
+            throw new InvalidCardIndexException("The number of reordered cards must be '" + (gameDTO.getBoard().getCardsToShow().size() - 1) + "'.");
+        }
+        reorderedCardIndexes.forEach(index -> {
+            if (index < 0 || index > (gameDTO.getBoard().getCardsToShow().size() - 2)) {
+                throw new InvalidCardIndexException("The reordered cards indexes must be between '0' and '" + (gameDTO.getBoard().getCardsToShow().size() - 2) + "'.");
+            }
+            if (Collections.frequency(reorderedCardIndexes, index) > 1) {
+                throw new InvalidCardIndexException("The reordered cards indexes must not be repeated.");
+            }
+        });
     }
 
 }

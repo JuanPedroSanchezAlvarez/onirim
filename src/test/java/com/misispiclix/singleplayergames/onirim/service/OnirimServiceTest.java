@@ -3,6 +3,7 @@ package com.misispiclix.singleplayergames.onirim.service;
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
 import com.misispiclix.singleplayergames.onirim.dto.card.DoorCardDTO;
 import com.misispiclix.singleplayergames.onirim.dto.card.LabyrinthCardDTO;
+import com.misispiclix.singleplayergames.onirim.dto.card.NightmareCardDTO;
 import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
 import com.misispiclix.singleplayergames.onirim.enums.Color;
 import com.misispiclix.singleplayergames.onirim.enums.GameStatus;
@@ -362,7 +363,241 @@ class OnirimServiceTest {
     }
 
     @Test
-    void drawCardFromDeck() {
+    void drawCardFromDeck_StartWithCardDeckEmpty() {
+        // PREPARATION
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        UUID id = onirimService.saveGame(gameDTO).getId();
+        // EXECUTION
+        onirimService.drawCardFromDeck(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        gameDTO = onirimService.getGameById(id).get();
+        // The game must be finished.
+        assertThat(gameDTO.getGameStatus()).isEqualTo(GameStatus.FINISHED);
+    }
+
+    @Test
+    void drawCardFromDeck_DrawLabyrinthCard_HandSizeLowerThanFive() {
+        // PREPARATION
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.GREEN, Symbol.MOON));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.SUN));
+        UUID id = onirimService.saveGame(gameDTO).getId();
+        // EXECUTION
+        onirimService.drawCardFromDeck(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        gameDTO = onirimService.getGameById(id).get();
+        // The next allowed action must be to draw a card.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DRAW_CARD_FROM_DECK);
+    }
+
+    @Test
+    void drawCardFromDeck_DrawLabyrinthCard_HandSizeOfFive() {
+        // PREPARATION
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.GREEN, Symbol.MOON));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.BLUE, Symbol.MOON));
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.SUN));
+        UUID id = onirimService.saveGame(gameDTO).getId();
+        // EXECUTION
+        onirimService.drawCardFromDeck(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        gameDTO = onirimService.getGameById(id).get();
+        // The next allowed actions must be to play or discard a card.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(2);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.PLAY_CARD_FROM_HAND);
+        assertThat(gameDTO.getAllowedActions().get(1)).isEqualTo(AllowedAction.DISCARD_CARD_FROM_HAND);
+    }
+
+    @Test
+    void drawCardFromDeck_DrawDoorCard_DiscoverDoor() {
+        // PREPARATION
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.GREEN, Symbol.MOON));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.BLUE, Symbol.MOON));
+        gameDTO.getBoard().getCardDeck().add(new DoorCardDTO(Color.BLUE));
+        UUID id = onirimService.saveGame(gameDTO).getId();
+        // EXECUTION
+        onirimService.drawCardFromDeck(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        gameDTO = onirimService.getGameById(id).get();
+        // We must have one discovered door.
+        assertThat(gameDTO.getBoard().getDiscoveredDoors().size()).isEqualTo(1);
+        // We must have one discarded card.
+        assertThat(gameDTO.getBoard().getDiscardedCards().size()).isEqualTo(1);
+        // The next allowed action must be to draw a card.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DRAW_CARD_FROM_DECK);
+    }
+
+    @Test
+    void drawCardFromDeck_DrawDoorCard_NoDiscoverDoor() {
+        // PREPARATION
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.GREEN, Symbol.MOON));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.BLUE, Symbol.MOON));
+        gameDTO.getBoard().getCardDeck().add(new DoorCardDTO(Color.GREEN));
+        UUID id = onirimService.saveGame(gameDTO).getId();
+        // EXECUTION
+        onirimService.drawCardFromDeck(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        gameDTO = onirimService.getGameById(id).get();
+        // We must have one card in the card deck.
+        assertThat(gameDTO.getBoard().getCardDeck().size()).isEqualTo(1);
+        // The next allowed action must be to draw a card.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DRAW_CARD_FROM_DECK);
+    }
+
+    @Test
+    void drawCardFromDeck_DrawNightmareCard_DiscardKeyCardFromHand() {
+        // PREPARATION
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        gameDTO.getBoard().getCardDeck().add(new NightmareCardDTO());
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        UUID id = onirimService.saveGame(gameDTO).getId();
+        // EXECUTION
+        onirimService.drawCardFromDeck(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        gameDTO = onirimService.getGameById(id).get();
+        // The next allowed action must be to discard a key card from hand.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DISCARD_KEY_CARD_FROM_HAND);
+    }
+
+    @Test
+    void drawCardFromDeck_DrawNightmareCard_LoseDoorCard() {
+        // PREPARATION
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        gameDTO.getBoard().getCardDeck().add(new NightmareCardDTO());
+        gameDTO.getBoard().getDiscoveredDoors().add(new DoorCardDTO(Color.BLUE));
+        UUID id = onirimService.saveGame(gameDTO).getId();
+        // EXECUTION
+        onirimService.drawCardFromDeck(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        gameDTO = onirimService.getGameById(id).get();
+        // The next allowed action must be to lose a discovered door card.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.LOSE_DOOR_CARD);
+    }
+
+    @Test
+    void drawCardFromDeck_DrawNightmareCard_DiscardTopCardsFromDeck() {
+        // PREPARATION
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getCardDeck().add(new NightmareCardDTO());
+        UUID id = onirimService.saveGame(gameDTO).getId();
+        // EXECUTION
+        onirimService.drawCardFromDeck(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        gameDTO = onirimService.getGameById(id).get();
+        // The next allowed action must be to discard the top cards from the deck.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
+    }
+
+    @Test
+    void drawCardFromDeck_DrawNightmareCard_DiscardPlayerHand() {
+        // PREPARATION
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getCardDeck().add(new NightmareCardDTO());
+        UUID id = onirimService.saveGame(gameDTO).getId();
+        // EXECUTION
+        onirimService.drawCardFromDeck(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        gameDTO = onirimService.getGameById(id).get();
+        // The next allowed action must be to discard the top cards from the deck or to discard the entire player hand.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(2);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DISCARD_PLAYER_HAND);
+    }
+
+    @Test
+    void drawCardFromDeck_AllDoorsDiscovered() {
+        // PREPARATION
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.GREEN, Symbol.MOON));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.BLUE, Symbol.MOON));
+        gameDTO.getBoard().getCardDeck().add(new DoorCardDTO(Color.BLUE));
+        gameDTO.getBoard().getDiscoveredDoors().add(new DoorCardDTO(Color.BLUE));
+        gameDTO.getBoard().getDiscoveredDoors().add(new DoorCardDTO(Color.RED));
+        gameDTO.getBoard().getDiscoveredDoors().add(new DoorCardDTO(Color.RED));
+        gameDTO.getBoard().getDiscoveredDoors().add(new DoorCardDTO(Color.GREEN));
+        gameDTO.getBoard().getDiscoveredDoors().add(new DoorCardDTO(Color.GREEN));
+        gameDTO.getBoard().getDiscoveredDoors().add(new DoorCardDTO(Color.YELLOW));
+        gameDTO.getBoard().getDiscoveredDoors().add(new DoorCardDTO(Color.YELLOW));
+        UUID id = onirimService.saveGame(gameDTO).getId();
+        // EXECUTION
+        onirimService.drawCardFromDeck(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        gameDTO = onirimService.getGameById(id).get();
+        // The game must be finished.
+        assertThat(gameDTO.getGameStatus()).isEqualTo(GameStatus.FINISHED);
+    }
+
+    @Test
+    void drawCardFromDeck_NoNextAllowedActions() {
+        // PREPARATION
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        gameDTO.getBoard().getCardDeck().add(new NightmareCardDTO());
+        UUID id = onirimService.saveGame(gameDTO).getId();
+        // EXECUTION
+        onirimService.drawCardFromDeck(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        gameDTO = onirimService.getGameById(id).get();
+        // There must be no actions allowed.
+        assertThat(gameDTO.getAllowedActions()).isEmpty();
+        // The game must be finished.
+        assertThat(gameDTO.getGameStatus()).isEqualTo(GameStatus.FINISHED);
     }
 
     @Test

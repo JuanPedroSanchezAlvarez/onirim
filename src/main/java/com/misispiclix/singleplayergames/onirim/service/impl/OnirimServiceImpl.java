@@ -83,9 +83,6 @@ public class OnirimServiceImpl implements IOnirimService {
         if (validateAllDoorsNotDiscovered(gameDTO)) {
             // We must draw a card as the next allowed action.
             gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
-        } else {
-            // We must finish the game.
-            gameDTO.setGameStatus(GameStatus.FINISHED);
         }
         // We save the game in the database.
         saveGame(gameDTO);
@@ -169,6 +166,7 @@ public class OnirimServiceImpl implements IOnirimService {
                 // We check if there are no allowed actions available.
                 if (gameDTO.getAllowedActions().isEmpty()) {
                     gameDTO.setMessageToDisplay("Game Over. YOU LOSE.");
+                    gameDTO.setGameStatus(GameStatus.FINISHED);
                 }
             }
         }
@@ -484,7 +482,12 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private boolean validateCardDeckNotEmpty(GameDTO gameDTO) {
-        gameDTO.setMessageToDisplay(gameDTO.getBoard().getCardDeck().isEmpty() ? "Game Over. YOU LOSE." : "");
+        if (gameDTO.getBoard().getCardDeck().isEmpty()) {
+            gameDTO.setMessageToDisplay("Game Over. YOU LOSE.");
+            gameDTO.setGameStatus(GameStatus.FINISHED);
+        } else {
+            gameDTO.setMessageToDisplay("");
+        }
         return gameDTO.getMessageToDisplay().isEmpty();
     }
 
@@ -499,7 +502,12 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private boolean validateAllDoorsNotDiscovered(GameDTO gameDTO) {
-        gameDTO.setMessageToDisplay(gameDTO.getBoard().getDiscoveredDoors().size() == 8 ? "Game Over. YOU WIN." : "");
+        if (gameDTO.getBoard().getDiscoveredDoors().size() == 8) {
+            gameDTO.setMessageToDisplay("Game Over. YOU WIN.");
+            gameDTO.setGameStatus(GameStatus.FINISHED);
+        } else {
+            gameDTO.setMessageToDisplay("");
+        }
         return gameDTO.getMessageToDisplay().isEmpty();
     }
 

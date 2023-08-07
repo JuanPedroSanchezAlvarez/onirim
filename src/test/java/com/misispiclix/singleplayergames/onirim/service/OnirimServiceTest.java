@@ -8,10 +8,7 @@ import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
 import com.misispiclix.singleplayergames.onirim.enums.Color;
 import com.misispiclix.singleplayergames.onirim.enums.GameStatus;
 import com.misispiclix.singleplayergames.onirim.enums.Symbol;
-import com.misispiclix.singleplayergames.onirim.exception.ActionNotAllowedException;
-import com.misispiclix.singleplayergames.onirim.exception.EqualCardSymbolException;
-import com.misispiclix.singleplayergames.onirim.exception.InvalidCardIndexException;
-import com.misispiclix.singleplayergames.onirim.exception.NotALabyrinthCardException;
+import com.misispiclix.singleplayergames.onirim.exception.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -600,8 +597,60 @@ class OnirimServiceTest {
         assertThat(gameDTO.getGameStatus()).isEqualTo(GameStatus.FINISHED);
     }
 
+    private UUID discardKeyCardFromHand_Preparation() {
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.GREEN, Symbol.MOON));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getBoard().getPlayerHand().add(new DoorCardDTO(Color.YELLOW));
+        gameDTO.getAllowedActions().add(AllowedAction.DISCARD_KEY_CARD_FROM_HAND);
+        return onirimService.saveGame(gameDTO).getId();
+    }
+
+    @Test
+    void discardKeyCardFromHand_InvalidCardIndexException() {
+        // PREPARATION
+        UUID id = confirmProphecy_Preparation();
+        // EXECUTION
+        // VERIFICATION
+        assertThrows(InvalidCardIndexException.class, () -> { onirimService.discardKeyCardFromHand(id, 5); } );
+    }
+
+    @Test
+    void discardKeyCardFromHand_NotAKeyCardException() {
+        // PREPARATION
+        UUID id = confirmProphecy_Preparation();
+        // EXECUTION
+        // VERIFICATION
+        assertThrows(NotAKeyCardException.class, () -> { onirimService.discardKeyCardFromHand(id, 0); } );
+    }
+
+    @Test
+    void discardKeyCardFromHand_NotALabyrinthCardException() {
+        // PREPARATION
+        UUID id = confirmProphecy_Preparation();
+        // EXECUTION
+        // VERIFICATION
+        assertThrows(NotALabyrinthCardException.class, () -> { onirimService.discardKeyCardFromHand(id, 3); } );
+    }
+
     @Test
     void discardKeyCardFromHand() {
+        // PREPARATION
+        UUID id = confirmProphecy_Preparation();
+        // EXECUTION
+        onirimService.discardKeyCardFromHand(id, 2);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        GameDTO gameDTO = onirimService.getGameById(id).get();
+        // The player hand must have 3 cards.
+        assertThat(gameDTO.getBoard().getPlayerHand().size()).isEqualTo(3);
+        // We must have 1 discarded card.
+        assertThat(gameDTO.getBoard().getDiscardedCards().size()).isEqualTo(1);
+        // The next allowed action must be to draw a card.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DRAW_CARD_FROM_DECK);
     }
 
     @Test

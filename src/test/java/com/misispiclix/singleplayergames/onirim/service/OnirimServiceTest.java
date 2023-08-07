@@ -653,8 +653,40 @@ class OnirimServiceTest {
         assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DRAW_CARD_FROM_DECK);
     }
 
+    private UUID loseDoorCard_Preparation() {
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getBoard().getDiscoveredDoors().add(new DoorCardDTO(Color.BLUE));
+        gameDTO.getBoard().getDiscoveredDoors().add(new DoorCardDTO(Color.YELLOW));
+        gameDTO.getAllowedActions().add(AllowedAction.LOSE_DOOR_CARD);
+        return onirimService.saveGame(gameDTO).getId();
+    }
+
+    @Test
+    void loseDoorCard_InvalidCardIndexException() {
+        // PREPARATION
+        UUID id = loseDoorCard_Preparation();
+        // EXECUTION
+        // VERIFICATION
+        assertThrows(InvalidCardIndexException.class, () -> { onirimService.loseDoorCard(id, 2); } );
+    }
+
     @Test
     void loseDoorCard() {
+        // PREPARATION
+        UUID id = loseDoorCard_Preparation();
+        // EXECUTION
+        onirimService.loseDoorCard(id, 0);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        GameDTO gameDTO = onirimService.getGameById(id).get();
+        // We must have 1 discovered door.
+        assertThat(gameDTO.getBoard().getDiscoveredDoors().size()).isEqualTo(1);
+        // We must have 1 card in the deck.
+        assertThat(gameDTO.getBoard().getCardDeck().size()).isEqualTo(1);
+        // The next allowed action must be to draw a card.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DRAW_CARD_FROM_DECK);
     }
 
     @Test

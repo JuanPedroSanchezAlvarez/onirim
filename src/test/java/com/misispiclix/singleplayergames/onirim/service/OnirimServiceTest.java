@@ -547,7 +547,7 @@ class OnirimServiceTest {
         // The next allowed action must be to discard the top cards from the deck or to discard the entire player hand.
         assertThat(gameDTO.getAllowedActions().size()).isEqualTo(2);
         assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
-        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DISCARD_PLAYER_HAND);
+        assertThat(gameDTO.getAllowedActions().get(1)).isEqualTo(AllowedAction.DISCARD_PLAYER_HAND);
     }
 
     @Test
@@ -696,7 +696,7 @@ class OnirimServiceTest {
         gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
         gameDTO.getBoard().getCardDeck().add(new NightmareCardDTO());
         gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
-        gameDTO.getAllowedActions().add(AllowedAction.LOSE_DOOR_CARD);
+        gameDTO.getAllowedActions().add(AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
         return onirimService.saveGame(gameDTO).getId();
     }
 
@@ -719,8 +719,61 @@ class OnirimServiceTest {
         assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DRAW_CARD_FROM_DECK);
     }
 
+    private UUID discardPlayerHand_Preparation(boolean loseGame) {
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        if (loseGame) {
+            gameDTO.getBoard().getCardDeck().add(new DoorCardDTO(Color.BLUE));
+            gameDTO.getBoard().getCardDeck().add(new DoorCardDTO(Color.BLUE));
+        } else {
+            gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+            gameDTO.getBoard().getCardDeck().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        }
+        gameDTO.getBoard().getPlayerHand().add(new DoorCardDTO(Color.BLUE));
+        gameDTO.getBoard().getPlayerHand().add(new DoorCardDTO(Color.YELLOW));
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.RED, Symbol.SUN));
+        gameDTO.getBoard().getPlayerHand().add(new NightmareCardDTO());
+        gameDTO.getBoard().getPlayerHand().add(new LabyrinthCardDTO(Color.BLUE, Symbol.KEY));
+        gameDTO.getAllowedActions().add(AllowedAction.DISCARD_PLAYER_HAND);
+        return onirimService.saveGame(gameDTO).getId();
+    }
+
+    @Test
+    void discardPlayerHand_loseGame() {
+        // PREPARATION
+        UUID id = discardPlayerHand_Preparation(true);
+        // EXECUTION
+        onirimService.discardPlayerHand(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        GameDTO gameDTO = onirimService.getGameById(id).get();
+        // We must have 5 cards in the discarded cards zone.
+        assertThat(gameDTO.getBoard().getDiscardedCards().size()).isEqualTo(5);
+        // The game must be finished.
+        assertThat(gameDTO.getGameStatus()).isEqualTo(GameStatus.FINISHED);
+    }
+
     @Test
     void discardPlayerHand() {
+        // PREPARATION
+        UUID id = discardPlayerHand_Preparation(false);
+        // EXECUTION
+        onirimService.discardPlayerHand(id);
+        // VERIFICATION
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        GameDTO gameDTO = onirimService.getGameById(id).get();
+        // We must have 5 cards in the discarded cards zone.
+        assertThat(gameDTO.getBoard().getDiscardedCards().size()).isEqualTo(5);
+        // We must have 5 cards in the player hand.
+        assertThat(gameDTO.getBoard().getPlayerHand().size()).isEqualTo(5);
+        // The next allowed actions must be to play or discard a card.
+        assertThat(gameDTO.getAllowedActions().size()).isEqualTo(2);
+        assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.PLAY_CARD_FROM_HAND);
+        assertThat(gameDTO.getAllowedActions().get(1)).isEqualTo(AllowedAction.DISCARD_CARD_FROM_HAND);
     }
 
 }

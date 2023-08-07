@@ -319,6 +319,11 @@ public class OnirimServiceImpl implements IOnirimService {
 
     private void initializePlayerHand(GameDTO gameDTO) {
         while (gameDTO.getBoard().getPlayerHand().size() < 5) {
+            if (gameDTO.getBoard().getCardDeck().isEmpty()) {
+                gameDTO.setMessageToDisplay("Game Over. YOU LOSE.");
+                gameDTO.setGameStatus(GameStatus.FINISHED);
+                break;
+            }
             if (gameDTO.getBoard().getCardDeck().get(gameDTO.getBoard().getCardDeck().size() - 1) instanceof LabyrinthCardDTO) {
                 gameDTO.getBoard().getPlayerHand().add(gameDTO.getBoard().getCardDeck().remove(gameDTO.getBoard().getCardDeck().size() - 1));
             } else {
@@ -386,12 +391,14 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     private void checkPlayerHandSizeAndSetAllowedActions(GameDTO gameDTO) {
-        if (gameDTO.getBoard().getPlayerHand().size() >= 5) {
-            gameDTO.getAllowedActions().add(AllowedAction.PLAY_CARD_FROM_HAND);
-            gameDTO.getAllowedActions().add(AllowedAction.DISCARD_CARD_FROM_HAND);
-            shuffleCardDeck(gameDTO);
-        } else {
-            gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+        if (!gameDTO.getGameStatus().equals(GameStatus.FINISHED)) {
+            if (gameDTO.getBoard().getPlayerHand().size() >= 5) {
+                gameDTO.getAllowedActions().add(AllowedAction.PLAY_CARD_FROM_HAND);
+                gameDTO.getAllowedActions().add(AllowedAction.DISCARD_CARD_FROM_HAND);
+                shuffleCardDeck(gameDTO);
+            } else {
+                gameDTO.getAllowedActions().add(AllowedAction.DRAW_CARD_FROM_DECK);
+            }
         }
     }
 

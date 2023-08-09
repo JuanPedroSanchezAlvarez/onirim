@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -27,12 +28,14 @@ import java.util.*;
 @RequiredArgsConstructor
 @Primary
 @Service(value = "onirimServiceImpl")
+@Transactional
 public class OnirimServiceImpl implements IOnirimService {
 
     private final IOnirimRepository onirimRepository;
     private final IOnirimMapper onirimMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public Page<GameDTO> getGames(Integer pageNumber, Integer pageSize) {
         //return onirimRepository.findAll().stream().map(onirimMapper::gameToGameDto).collect(Collectors.toList());
         Sort sort = Sort.by(Sort.Order.desc("created"));
@@ -41,6 +44,7 @@ public class OnirimServiceImpl implements IOnirimService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<GameDTO> getGameById(UUID id) {
         return Optional.ofNullable(onirimMapper.gameToGameDto(onirimRepository.findById(id).orElse(null)));
     }

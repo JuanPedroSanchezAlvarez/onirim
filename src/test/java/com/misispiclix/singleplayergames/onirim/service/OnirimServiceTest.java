@@ -8,11 +8,13 @@ import com.misispiclix.singleplayergames.onirim.enums.AllowedAction;
 import com.misispiclix.singleplayergames.onirim.enums.Color;
 import com.misispiclix.singleplayergames.onirim.enums.GameStatus;
 import com.misispiclix.singleplayergames.onirim.enums.Symbol;
-import com.misispiclix.singleplayergames.onirim.exception.*;
+import com.misispiclix.singleplayergames.onirim.exception.EqualCardSymbolException;
+import com.misispiclix.singleplayergames.onirim.exception.InvalidCardIndexException;
+import com.misispiclix.singleplayergames.onirim.exception.NotAKeyCardException;
+import com.misispiclix.singleplayergames.onirim.exception.NotALabyrinthCardException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -23,10 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
 class OnirimServiceTest {
 
-    @InjectMocks
+    @Autowired
     IOnirimService onirimService;
 
     @Test
@@ -462,8 +464,8 @@ class OnirimServiceTest {
         Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
         assertThat(optionalOfGameDto).isNotEmpty();
         gameDTO = onirimService.getGameById(id).get();
-        // We must have one card in the card deck.
-        assertThat(gameDTO.getBoard().getCardDeck().size()).isEqualTo(1);
+        // We must have one card in the limbo stack.
+        assertThat(gameDTO.getBoard().getLimboStack().size()).isEqualTo(1);
         // The next allowed action must be to draw a card.
         assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
         assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DRAW_CARD_FROM_DECK);
@@ -610,7 +612,7 @@ class OnirimServiceTest {
     @Test
     void discardKeyCardFromHand_InvalidCardIndexException() {
         // PREPARATION
-        UUID id = confirmProphecy_Preparation();
+        UUID id = discardKeyCardFromHand_Preparation();
         // EXECUTION
         // VERIFICATION
         assertThrows(InvalidCardIndexException.class, () -> { onirimService.discardKeyCardFromHand(id, 5); } );
@@ -619,7 +621,7 @@ class OnirimServiceTest {
     @Test
     void discardKeyCardFromHand_NotAKeyCardException() {
         // PREPARATION
-        UUID id = confirmProphecy_Preparation();
+        UUID id = discardKeyCardFromHand_Preparation();
         // EXECUTION
         // VERIFICATION
         assertThrows(NotAKeyCardException.class, () -> { onirimService.discardKeyCardFromHand(id, 0); } );
@@ -628,7 +630,7 @@ class OnirimServiceTest {
     @Test
     void discardKeyCardFromHand_NotALabyrinthCardException() {
         // PREPARATION
-        UUID id = confirmProphecy_Preparation();
+        UUID id = discardKeyCardFromHand_Preparation();
         // EXECUTION
         // VERIFICATION
         assertThrows(NotALabyrinthCardException.class, () -> { onirimService.discardKeyCardFromHand(id, 3); } );
@@ -637,7 +639,7 @@ class OnirimServiceTest {
     @Test
     void discardKeyCardFromHand() {
         // PREPARATION
-        UUID id = confirmProphecy_Preparation();
+        UUID id = discardKeyCardFromHand_Preparation();
         // EXECUTION
         onirimService.discardKeyCardFromHand(id, 2);
         // VERIFICATION
@@ -682,8 +684,8 @@ class OnirimServiceTest {
         GameDTO gameDTO = onirimService.getGameById(id).get();
         // We must have 1 discovered door.
         assertThat(gameDTO.getBoard().getDiscoveredDoors().size()).isEqualTo(1);
-        // We must have 1 card in the deck.
-        assertThat(gameDTO.getBoard().getCardDeck().size()).isEqualTo(1);
+        // We must have 1 card in the limbo stack.
+        assertThat(gameDTO.getBoard().getLimboStack().size()).isEqualTo(1);
         // The next allowed action must be to draw a card.
         assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
         assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DRAW_CARD_FROM_DECK);
@@ -712,8 +714,8 @@ class OnirimServiceTest {
         GameDTO gameDTO = onirimService.getGameById(id).get();
         // We must have 2 Labyrinth cards in the discarded cards zone.
         assertThat(gameDTO.getBoard().getDiscardedCards().size()).isEqualTo(2);
-        // We must have the other 3 cards in the card deck.
-        assertThat(gameDTO.getBoard().getCardDeck().size()).isEqualTo(3);
+        // We must have the other 3 cards in the limbo stack.
+        assertThat(gameDTO.getBoard().getLimboStack().size()).isEqualTo(3);
         // The next allowed action must be to draw a card.
         assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
         assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DRAW_CARD_FROM_DECK);

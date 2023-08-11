@@ -141,7 +141,7 @@ public class OnirimServiceImpl implements IOnirimService {
         // We check that the discarded card index and the reordered cards indexes are valid.
         validateProphecyCardsIndexes(gameDTO, discardedCardIndex, reorderedCardIndexes);
         // We discard the chosen card.
-        gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getCardsToShow().get(discardedCardIndex));
+        gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getCardsToShow().remove(discardedCardIndex.intValue()));
         // We rearrange the top cards of the main deck in the chosen order.
         rearrangeTopCardsOfTheCardDeck(gameDTO, reorderedCardIndexes);
         // We must draw a card as the next action.
@@ -188,6 +188,8 @@ public class OnirimServiceImpl implements IOnirimService {
         validatePlayedCardIndex(gameDTO, discardedCardIndex);
         // We check that the chosen card is a key card.
         validateChosenCardIsKeyCard(gameDTO, discardedCardIndex);
+        // We remove the current allowed actions.
+        gameDTO.getAllowedActions().clear();
         // We discard the chosen key card from hand.
         gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getPlayerHand().remove(discardedCardIndex.intValue()));
         // We set the next allowed actions.
@@ -204,6 +206,8 @@ public class OnirimServiceImpl implements IOnirimService {
         validateAllowedAction(gameDTO, AllowedAction.LOSE_DOOR_CARD);
         // We check that the chosen door card exists in the discovered doors zone.
         validateDiscardedDoorIndex(gameDTO, doorCardIndex);
+        // We remove the current allowed actions.
+        gameDTO.getAllowedActions().clear();
         // We move the chosen door card to the limbo stack.
         gameDTO.getBoard().getLimboStack().add(gameDTO.getBoard().getDiscoveredDoors().remove(doorCardIndex.intValue()));
         // We set the next allowed actions.
@@ -218,6 +222,8 @@ public class OnirimServiceImpl implements IOnirimService {
         GameDTO gameDTO = getGameById(id).orElseThrow(GameNotFoundException::new);
         // We check that the action is allowed.
         validateAllowedAction(gameDTO, AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
+        // We remove the current allowed actions.
+        gameDTO.getAllowedActions().clear();
         // We discard the top cards from the main deck.
         int numberOfCardsToDiscard = Math.min(gameDTO.getBoard().getCardDeck().size(), 5);
         for (int i = 0; i < numberOfCardsToDiscard; i++) {
@@ -239,6 +245,8 @@ public class OnirimServiceImpl implements IOnirimService {
         GameDTO gameDTO = getGameById(id).orElseThrow(GameNotFoundException::new);
         // We check that the action is allowed.
         validateAllowedAction(gameDTO, AllowedAction.DISCARD_PLAYER_HAND);
+        // We remove the current allowed actions.
+        gameDTO.getAllowedActions().clear();
         // We discard the entire player hand.
         while (!gameDTO.getBoard().getPlayerHand().isEmpty()) {
             gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getPlayerHand().remove(gameDTO.getBoard().getPlayerHand().size() - 1));

@@ -20,4 +20,7 @@ import lombok.Setter;
 @DiscriminatorColumn(name = "card_type", discriminatorType = DiscriminatorType.INTEGER)
 public abstract class Card extends BaseEntity {
 
+    @Column(name = "position_in_deck", nullable = false)
+    private Integer positionInDeck;
+
 }

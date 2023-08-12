@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,10 +27,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
+@Transactional
 class OnirimServiceTest {
 
     @Autowired
     IOnirimService onirimService;
+
+    private GameDTO getGameForTest(UUID id) {
+        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
+        assertThat(optionalOfGameDto).isNotEmpty();
+        return optionalOfGameDto.get();
+    }
 
     @Test
     void getGames() {
@@ -58,9 +66,7 @@ class OnirimServiceTest {
         // PREPARATION
         // EXECUTION
         UUID id = onirimService.createNewGame();
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        GameDTO gameDTO = optionalOfGameDto.get();
+        GameDTO gameDTO = getGameForTest(id);
         // VERIFICATION
         // The card deck must have 71 cards.
         assertThat(gameDTO.getBoard().getCardDeck().size()).isEqualTo(71);
@@ -144,9 +150,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.playCardFromHand(id, 2);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        GameDTO gameDTO = onirimService.getGameById(id).get();
+        GameDTO gameDTO = getGameForTest(id);
         // The player hand must have 4 cards.
         assertThat(gameDTO.getBoard().getPlayerHand().size()).isEqualTo(4);
         // The next allowed action must be to draw a card.
@@ -161,9 +165,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.playCardFromHand(id, 4);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        GameDTO gameDTO = onirimService.getGameById(id).get();
+        GameDTO gameDTO = getGameForTest(id);
         // The player hand must have 4 cards.
         assertThat(gameDTO.getBoard().getPlayerHand().size()).isEqualTo(4);
         // The next allowed action must be to draw a card.
@@ -180,9 +182,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.playCardFromHand(id, 4);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        GameDTO gameDTO = onirimService.getGameById(id).get();
+        GameDTO gameDTO = getGameForTest(id);
         // The player hand must have 4 cards.
         assertThat(gameDTO.getBoard().getPlayerHand().size()).isEqualTo(4);
         // There must be no actions allowed.
@@ -227,9 +227,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.discardCardFromHand(id, 0);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        GameDTO gameDTO = onirimService.getGameById(id).get();
+        GameDTO gameDTO = getGameForTest(id);
         // The player hand must have 4 cards.
         assertThat(gameDTO.getBoard().getPlayerHand().size()).isEqualTo(4);
         // The next allowed action must be to activate a prophecy.
@@ -246,9 +244,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.discardCardFromHand(id, 1);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        GameDTO gameDTO = onirimService.getGameById(id).get();
+        GameDTO gameDTO = getGameForTest(id);
         // The player hand must have 4 cards.
         assertThat(gameDTO.getBoard().getPlayerHand().size()).isEqualTo(4);
         // The next allowed action must be to draw a card.
@@ -276,9 +272,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.activateProphecy(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        GameDTO gameDTO = onirimService.getGameById(id).get();
+        GameDTO gameDTO = getGameForTest(id);
         // The cards to show zone must have 5 cards.
         assertThat(gameDTO.getBoard().getCardsToShow().size()).isEqualTo(5);
         // The next allowed action must be to confirm the prophecy.
@@ -340,9 +334,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.confirmProphecy(id, 2, List.of(1, 0, 3, 2));
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        GameDTO gameDTO = onirimService.getGameById(id).get();
+        GameDTO gameDTO = getGameForTest(id);
         // The card deck must have 4 cards.
         assertThat(gameDTO.getBoard().getCardDeck().size()).isEqualTo(4);
         // The discarded cards zone must have 1 card.
@@ -370,9 +362,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.drawCardFromDeck(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        gameDTO = onirimService.getGameById(id).get();
+        gameDTO = getGameForTest(id);
         // The game must be finished.
         assertThat(gameDTO.getGameStatus()).isEqualTo(GameStatus.FINISHED);
     }
@@ -390,9 +380,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.drawCardFromDeck(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        gameDTO = onirimService.getGameById(id).get();
+        gameDTO = getGameForTest(id);
         // The next allowed action must be to draw a card.
         assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
         assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DRAW_CARD_FROM_DECK);
@@ -412,9 +400,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.drawCardFromDeck(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        gameDTO = onirimService.getGameById(id).get();
+        gameDTO = getGameForTest(id);
         // The next allowed actions must be to play or discard a card.
         assertThat(gameDTO.getAllowedActions().size()).isEqualTo(2);
         assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.PLAY_CARD_FROM_HAND);
@@ -435,9 +421,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.drawCardFromDeck(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        gameDTO = onirimService.getGameById(id).get();
+        gameDTO = getGameForTest(id);
         // We must have one discovered door.
         assertThat(gameDTO.getBoard().getDiscoveredDoors().size()).isEqualTo(1);
         // We must have one discarded card.
@@ -461,9 +445,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.drawCardFromDeck(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        gameDTO = onirimService.getGameById(id).get();
+        gameDTO = getGameForTest(id);
         // We must have one card in the limbo stack.
         assertThat(gameDTO.getBoard().getLimboStack().size()).isEqualTo(1);
         // The next allowed action must be to draw a card.
@@ -482,9 +464,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.drawCardFromDeck(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        gameDTO = onirimService.getGameById(id).get();
+        gameDTO = getGameForTest(id);
         // The next allowed action must be to discard a key card from hand.
         assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
         assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DISCARD_KEY_CARD_FROM_HAND);
@@ -501,9 +481,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.drawCardFromDeck(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        gameDTO = onirimService.getGameById(id).get();
+        gameDTO = getGameForTest(id);
         // The next allowed action must be to lose a discovered door card.
         assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
         assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.LOSE_DOOR_CARD);
@@ -520,9 +498,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.drawCardFromDeck(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        gameDTO = onirimService.getGameById(id).get();
+        gameDTO = getGameForTest(id);
         // The next allowed action must be to discard the top cards from the deck.
         assertThat(gameDTO.getAllowedActions().size()).isEqualTo(1);
         assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
@@ -543,9 +519,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.drawCardFromDeck(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        gameDTO = onirimService.getGameById(id).get();
+        gameDTO = getGameForTest(id);
         // The next allowed action must be to discard the top cards from the deck or to discard the entire player hand.
         assertThat(gameDTO.getAllowedActions().size()).isEqualTo(2);
         assertThat(gameDTO.getAllowedActions().get(0)).isEqualTo(AllowedAction.DISCARD_TOP_CARDS_FROM_DECK);
@@ -573,9 +547,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.drawCardFromDeck(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        gameDTO = onirimService.getGameById(id).get();
+        gameDTO = getGameForTest(id);
         // The game must be finished.
         assertThat(gameDTO.getGameStatus()).isEqualTo(GameStatus.FINISHED);
     }
@@ -590,9 +562,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.drawCardFromDeck(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        gameDTO = onirimService.getGameById(id).get();
+        gameDTO = getGameForTest(id);
         // There must be no actions allowed.
         assertThat(gameDTO.getAllowedActions()).isEmpty();
         // The game must be finished.
@@ -643,9 +613,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.discardKeyCardFromHand(id, 2);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        GameDTO gameDTO = onirimService.getGameById(id).get();
+        GameDTO gameDTO = getGameForTest(id);
         // The player hand must have 3 cards.
         assertThat(gameDTO.getBoard().getPlayerHand().size()).isEqualTo(3);
         // We must have 1 discarded card.
@@ -679,9 +647,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.loseDoorCard(id, 0);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        GameDTO gameDTO = onirimService.getGameById(id).get();
+        GameDTO gameDTO = getGameForTest(id);
         // We must have 1 discovered door.
         assertThat(gameDTO.getBoard().getDiscoveredDoors().size()).isEqualTo(1);
         // We must have 1 card in the limbo stack.
@@ -709,9 +675,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.discardTopCardsFromDeck(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        GameDTO gameDTO = onirimService.getGameById(id).get();
+        GameDTO gameDTO = getGameForTest(id);
         // We must have 2 Labyrinth cards in the discarded cards zone.
         assertThat(gameDTO.getBoard().getDiscardedCards().size()).isEqualTo(2);
         // We must have the other 3 cards in the limbo stack.
@@ -749,9 +713,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.discardPlayerHand(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        GameDTO gameDTO = onirimService.getGameById(id).get();
+        GameDTO gameDTO = getGameForTest(id);
         // We must have 5 cards in the discarded cards zone.
         assertThat(gameDTO.getBoard().getDiscardedCards().size()).isEqualTo(5);
         // The game must be finished.
@@ -765,9 +727,7 @@ class OnirimServiceTest {
         // EXECUTION
         onirimService.discardPlayerHand(id);
         // VERIFICATION
-        Optional<GameDTO> optionalOfGameDto = onirimService.getGameById(id);
-        assertThat(optionalOfGameDto).isNotEmpty();
-        GameDTO gameDTO = onirimService.getGameById(id).get();
+        GameDTO gameDTO = getGameForTest(id);
         // We must have 5 cards in the discarded cards zone.
         assertThat(gameDTO.getBoard().getDiscardedCards().size()).isEqualTo(5);
         // We must have 5 cards in the player hand.

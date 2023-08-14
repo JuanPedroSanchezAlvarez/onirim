@@ -1,6 +1,7 @@
 package com.misispiclix.singleplayergames.onirim.service.impl;
 
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
+import com.misispiclix.singleplayergames.onirim.dto.GameLogDTO;
 import com.misispiclix.singleplayergames.onirim.dto.card.CardDTO;
 import com.misispiclix.singleplayergames.onirim.dto.card.DoorCardDTO;
 import com.misispiclix.singleplayergames.onirim.dto.card.LabyrinthCardDTO;
@@ -56,6 +57,7 @@ public class OnirimServiceImpl implements IOnirimService {
         initializePlayerHand(gameDTO);
         checkPlayerHandSizeAndSetAllowedActions(gameDTO);
         gameDTO.setGameStatus(GameStatus.PLAYING);
+        gameDTO.getLogs().add(new GameLogDTO("Game started."));
         return saveGame(gameDTO).getId();
     }
 
@@ -320,6 +322,7 @@ public class OnirimServiceImpl implements IOnirimService {
         for (int i = 0; i < 2; i++) { gameDTO.getBoard().getCardDeck().add(new DoorCardDTO(Color.GREEN)); }
         for (int i = 0; i < 2; i++) { gameDTO.getBoard().getCardDeck().add(new DoorCardDTO(Color.BLUE)); }
         for (int i = 0; i < 2; i++) { gameDTO.getBoard().getCardDeck().add(new DoorCardDTO(Color.YELLOW)); }
+        gameDTO.getLogs().add(new GameLogDTO("Card deck initialized."));
         shuffleCardDeck(gameDTO);
     }
 
@@ -327,6 +330,7 @@ public class OnirimServiceImpl implements IOnirimService {
         gameDTO.getBoard().getLimboStack().forEach(card -> { gameDTO.getBoard().getCardDeck().add(card); });
         gameDTO.getBoard().getLimboStack().clear();
         Collections.shuffle(gameDTO.getBoard().getCardDeck());
+        gameDTO.getLogs().add(new GameLogDTO("Card deck shuffled."));
     }
 
     private void initializePlayerHand(GameDTO gameDTO) {
@@ -334,6 +338,7 @@ public class OnirimServiceImpl implements IOnirimService {
             if (gameDTO.getBoard().getCardDeck().isEmpty()) {
                 gameDTO.setMessageToDisplay("Game Over. YOU LOSE.");
                 gameDTO.setGameStatus(GameStatus.FINISHED);
+                gameDTO.getLogs().add(new GameLogDTO("Card deck is empty. YOU LOSE."));
                 break;
             }
             if (gameDTO.getBoard().getCardDeck().get(gameDTO.getBoard().getCardDeck().size() - 1) instanceof LabyrinthCardDTO) {
@@ -342,18 +347,24 @@ public class OnirimServiceImpl implements IOnirimService {
                 gameDTO.getBoard().getLimboStack().add(gameDTO.getBoard().getCardDeck().remove(gameDTO.getBoard().getCardDeck().size() - 1));
             }
         }
+        if (!gameDTO.getGameStatus().equals(GameStatus.FINISHED)) {
+            gameDTO.getLogs().add(new GameLogDTO("Initialized player hand."));
+        }
     }
 
     private void playCard(GameDTO gameDTO, Integer playedCardIndex) {
         gameDTO.getBoard().getPlayedCards().add((LabyrinthCardDTO) gameDTO.getBoard().getPlayerHand().remove(playedCardIndex.intValue()));
+        gameDTO.getLogs().add(new GameLogDTO("Played card with index " + playedCardIndex + " from player hand."));
     }
 
     private void discardCard(GameDTO gameDTO, Integer discardedCardIndex) {
         gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getPlayerHand().remove(discardedCardIndex.intValue()));
+        gameDTO.getLogs().add(new GameLogDTO("Discarded card with index " + discardedCardIndex + " from player hand."));
     }
 
     private void drawCard(GameDTO gameDTO) {
         gameDTO.getBoard().getPlayerHand().add(gameDTO.getBoard().getCardDeck().remove(gameDTO.getBoard().getCardDeck().size() - 1));
+        gameDTO.getLogs().add(new GameLogDTO("Card drawn from deck."));
     }
 
     private void discoverDoor(GameDTO gameDTO) {
@@ -361,6 +372,7 @@ public class OnirimServiceImpl implements IOnirimService {
             if (gameDTO.getBoard().getCardDeck().get(i) instanceof DoorCardDTO doorCard) {
                 if (doorCard.getColor().equals(gameDTO.getBoard().getPlayedCards().get(gameDTO.getBoard().getPlayedCards().size() - 1).getColor())) {
                     gameDTO.getBoard().getDiscoveredDoors().add((DoorCardDTO) gameDTO.getBoard().getCardDeck().remove(i));
+                    gameDTO.getLogs().add(new GameLogDTO("Door discovered."));
                     break;
                 }
             }
@@ -373,6 +385,7 @@ public class OnirimServiceImpl implements IOnirimService {
         for (int i = 0; i < numberOfCardsToShow; i++) {
             gameDTO.getBoard().getCardsToShow().add(gameDTO.getBoard().getCardDeck().remove(gameDTO.getBoard().getCardDeck().size() - 1));
         }
+        gameDTO.getLogs().add(new GameLogDTO("Prophecy cards showed."));
     }
 
     private void rearrangeTopCardsOfTheCardDeck(GameDTO gameDTO, List<Integer> reorderedCardIndexes) {
@@ -390,6 +403,7 @@ public class OnirimServiceImpl implements IOnirimService {
             gameDTO.getBoard().getCardDeck().add(reorderedCardListDTO.remove(reorderedCardListDTO.size() - 1));
         }
         gameDTO.getBoard().getCardsToShow().clear();
+        gameDTO.getLogs().add(new GameLogDTO("Reordered top cards from deck."));
     }
 
     private void checkTypeOfCardDrawn(GameDTO gameDTO) {
@@ -424,6 +438,7 @@ public class OnirimServiceImpl implements IOnirimService {
                     cardWithKeySymbolAndSameColorFound = true;
                     gameDTO.getBoard().getDiscoveredDoors().add((DoorCardDTO) gameDTO.getBoard().getPlayerHand().remove(gameDTO.getBoard().getPlayerHand().size() - 1));
                     gameDTO.getBoard().getDiscardedCards().add(gameDTO.getBoard().getPlayerHand().remove(i));
+                    gameDTO.getLogs().add(new GameLogDTO("Door discovered and key card discarded."));
                     break;
                 }
             }

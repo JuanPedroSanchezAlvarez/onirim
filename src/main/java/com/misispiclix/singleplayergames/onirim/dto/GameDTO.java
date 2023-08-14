@@ -18,12 +18,14 @@ public class GameDTO extends BaseDTO {
     private LocalDateTime created;
     private LocalDateTime updated;
     private Integer version;
+    private List<GameLogDTO> logs;
 
     public GameDTO() {
         this.board = new BoardDTO();
         this.allowedActions = new ArrayList<>();
         this.gameStatus = GameStatus.CREATED;
         this.messageToDisplay = "";
+        this.logs = new ArrayList<>();
     }
 
 }

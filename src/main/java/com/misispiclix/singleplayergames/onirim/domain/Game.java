@@ -46,6 +46,10 @@ public class Game extends BaseEntity {
     @Version
     private Integer version;
 
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "game_id")
+    private List<GameLog> logs;
+
     @PrePersist
     @PreUpdate
     private void preSave() {

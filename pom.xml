@@ -138,12 +138,13 @@
 				<artifactId>springdoc-openapi-maven-plugin</artifactId>
 				<version>1.4</version>
 				<configuration>
-					<apiDocsUrl>http://localhost:8081/v3/api-docs.yaml</apiDocsUrl>
-					<!-- <outputFileName>oa3.yaml</outputFileName> -->
+					<apiDocsUrl>http://localhost:8081/v3/api-docs</apiDocsUrl>
+					<outputFileName>openapi.yaml</outputFileName>
+					<outputDir>${project.build.directory}</outputDir>
 				</configuration>
 				<executions>
 					<execution>
-						<id>integration-test</id>
+						<phase>integration-test</phase>
 						<goals>
 							<goal>generate</goal>
 						</goals>

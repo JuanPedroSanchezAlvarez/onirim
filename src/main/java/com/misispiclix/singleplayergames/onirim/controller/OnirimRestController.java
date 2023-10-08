@@ -3,6 +3,12 @@ package com.misispiclix.singleplayergames.onirim.controller;
 import com.misispiclix.singleplayergames.onirim.dto.GameDTO;
 import com.misispiclix.singleplayergames.onirim.exception.GameNotFoundException;
 import com.misispiclix.singleplayergames.onirim.service.IOnirimService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Onirim", description = "Onirim management APIs")
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -28,77 +35,171 @@ public class OnirimRestController {
     @Qualifier(value = "onirimServiceImpl")
     private final IOnirimService onirimService;
 
+    @Operation(summary = "Retrieve a Page of Games",
+            description = "Get a page of game object. The response is a page object with a content of game objects.",
+            tags = { "game", "get" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)) }) })
     @GetMapping(path = ONIRIM_PATH)
-    public Page<GameDTO> getGames(@RequestParam(value = "pageNumber", defaultValue = "0") Integer pageNumber,
+    public ResponseEntity<Page<GameDTO>> getGames(@RequestParam(value = "pageNumber", defaultValue = "0") Integer pageNumber,
                                   @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
-        return onirimService.getGames(pageNumber, pageSize);
+        return new ResponseEntity<>(onirimService.getGames(pageNumber, pageSize), HttpStatus.OK);
     }
 
+    /*@GetMapping(path = ONIRIM_PATH)
+    public Page<GameDTO> getGames(@ParameterObject Pageable pageable) {
+        return onirimService.getGames(pageable);
+    }*/
+
+    @Operation(summary = "Retrieve a Game by Id",
+            description = "Get a game object by specifying its id.",
+            tags = { "game", "get" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = GameDTO.class)) }),
+            @ApiResponse(responseCode = "404", description = "Game not found.") })
     @GetMapping(path = ONIRIM_PATH_ID)
-    public GameDTO getGameById(@PathVariable(value = "id") UUID id) {
-        return onirimService.getGameById(id).orElseThrow(GameNotFoundException::new);
+    public ResponseEntity<GameDTO> getGameById(@PathVariable(value = "id") UUID id) {
+        return new ResponseEntity<>(onirimService.getGameById(id).orElseThrow(GameNotFoundException::new), HttpStatus.OK);
     }
 
+    @Operation(summary = "Create a new Game",
+            description = "Create a new game to start playing.",
+            tags = { "game", "post" })
+    @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Created") })
     @PostMapping(path = ONIRIM_PATH)
-    public ResponseEntity createNewGame() {
+    public ResponseEntity<HttpHeaders> createNewGame() {
         UUID createdGameId = onirimService.createNewGame();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", ONIRIM_PATH + "/" + createdGameId);
-        return new ResponseEntity(headers, HttpStatus.CREATED);
+        return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Play a Card from Hand",
+            description = "Play the selected card from the hand to the game.",
+            tags = { "game", "put" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Invalid card index."),
+            @ApiResponse(responseCode = "400", description = "Not a Labyrinth Card."),
+            @ApiResponse(responseCode = "400", description = "Equal Card Symbol."),
+            @ApiResponse(responseCode = "404", description = "Game not found."),
+            @ApiResponse(responseCode = "405", description = "Action not allowed.") })
     @PutMapping(path = ONIRIM_PATH_ID + "/playCardFromHand")
-    public ResponseEntity playCardFromHand(@PathVariable(value = "id") UUID id, @RequestBody Integer playedCardIndex) {
+    public ResponseEntity<String> playCardFromHand(@PathVariable(value = "id") UUID id, @RequestBody Integer playedCardIndex) {
         onirimService.playCardFromHand(id, playedCardIndex);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "Discard a Card from Hand",
+            description = "Discard the selected card from the hand to the discard pile.",
+            tags = { "game", "put" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Invalid card index."),
+            @ApiResponse(responseCode = "404", description = "Game not found."),
+            @ApiResponse(responseCode = "405", description = "Action not allowed.") })
     @PutMapping(path = ONIRIM_PATH_ID + "/discardCardFromHand")
-    public ResponseEntity discardCardFromHand(@PathVariable(value = "id") UUID id, @RequestBody Integer discardedCardIndex) {
+    public ResponseEntity<String> discardCardFromHand(@PathVariable(value = "id") UUID id, @RequestBody Integer discardedCardIndex) {
         onirimService.discardCardFromHand(id, discardedCardIndex);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "Activate a Prophecy",
+            description = "Activate a prophecy from the card deck.",
+            tags = { "game", "put" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "404", description = "Game not found."),
+            @ApiResponse(responseCode = "405", description = "Action not allowed.") })
     @PutMapping(path = ONIRIM_PATH_ID + "/activateProphecy")
-    public ResponseEntity activateProphecy(@PathVariable(value = "id") UUID id) {
+    public ResponseEntity<String> activateProphecy(@PathVariable(value = "id") UUID id) {
         onirimService.activateProphecy(id);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "Confirm a Prophecy",
+            description = "Confirm a prophecy to the card deck.",
+            tags = { "game", "put" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Invalid card index."),
+            @ApiResponse(responseCode = "404", description = "Game not found."),
+            @ApiResponse(responseCode = "405", description = "Action not allowed.") })
     @PutMapping(path = ONIRIM_PATH_ID + "/confirmProphecy")
-    public ResponseEntity confirmProphecy(@PathVariable(value = "id") UUID id, @RequestBody Integer discardedCardIndex, @RequestBody List<Integer> reorderedCardIndexes) {
+    public ResponseEntity<String> confirmProphecy(@PathVariable(value = "id") UUID id, @RequestBody Integer discardedCardIndex, @RequestBody List<Integer> reorderedCardIndexes) {
         onirimService.confirmProphecy(id, discardedCardIndex, reorderedCardIndexes);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "Draw a Card from Deck",
+            description = "Draw a new card from the card deck.",
+            tags = { "game", "put" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "404", description = "Game not found."),
+            @ApiResponse(responseCode = "405", description = "Action not allowed.") })
     @PutMapping(path = ONIRIM_PATH_ID + "/drawCardFromDeck")
-    public ResponseEntity drawCardFromDeck(@PathVariable(value = "id") UUID id) {
+    public ResponseEntity<String> drawCardFromDeck(@PathVariable(value = "id") UUID id) {
         onirimService.drawCardFromDeck(id);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "Discard a Key Card from Hand",
+            description = "Discard the selected key card from the hand to the discard pile.",
+            tags = { "game", "put" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Invalid card index."),
+            @ApiResponse(responseCode = "400", description = "Not a Labyrinth Card."),
+            @ApiResponse(responseCode = "400", description = "Not a Key Card."),
+            @ApiResponse(responseCode = "404", description = "Game not found."),
+            @ApiResponse(responseCode = "405", description = "Action not allowed.") })
     @PutMapping(path = ONIRIM_PATH_ID + "/discardKeyCardFromHand")
-    public ResponseEntity discardKeyCardFromHand(@PathVariable(value = "id") UUID id, @RequestBody Integer discardedCardIndex) {
+    public ResponseEntity<String> discardKeyCardFromHand(@PathVariable(value = "id") UUID id, @RequestBody Integer discardedCardIndex) {
         onirimService.discardKeyCardFromHand(id, discardedCardIndex);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "Lose a Door Card",
+            description = "Lose the selected door card from the discovered doors deck to the game deck.",
+            tags = { "game", "put" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Invalid card index."),
+            @ApiResponse(responseCode = "404", description = "Game not found."),
+            @ApiResponse(responseCode = "405", description = "Action not allowed.") })
     @PutMapping(path = ONIRIM_PATH_ID + "/loseDoorCard")
-    public ResponseEntity loseDoorCard(@PathVariable(value = "id") UUID id, @RequestBody Integer doorCardIndex) {
+    public ResponseEntity<String> loseDoorCard(@PathVariable(value = "id") UUID id, @RequestBody Integer doorCardIndex) {
         onirimService.loseDoorCard(id, doorCardIndex);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "Discard the top Cards from the Deck",
+            description = "Discard the top 5 cards from the deck to the discard pile.",
+            tags = { "game", "put" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "404", description = "Game not found."),
+            @ApiResponse(responseCode = "405", description = "Action not allowed.") })
     @PutMapping(path = ONIRIM_PATH_ID + "/discardTopCardsFromDeck")
-    public ResponseEntity discardTopCardsFromDeck(@PathVariable(value = "id") UUID id) {
+    public ResponseEntity<String> discardTopCardsFromDeck(@PathVariable(value = "id") UUID id) {
         onirimService.discardTopCardsFromDeck(id);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "Discard the Player Hand",
+            description = "Discard the entire player hand to the discard pile.",
+            tags = { "game", "put" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "404", description = "Game not found."),
+            @ApiResponse(responseCode = "405", description = "Action not allowed.") })
     @PutMapping(path = ONIRIM_PATH_ID + "/discardPlayerHand")
-    public ResponseEntity discardPlayerHand(@PathVariable(value = "id") UUID id) {
+    public ResponseEntity<String> discardPlayerHand(@PathVariable(value = "id") UUID id) {
         onirimService.discardPlayerHand(id);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 

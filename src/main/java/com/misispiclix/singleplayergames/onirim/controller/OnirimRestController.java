@@ -36,8 +36,8 @@ public class OnirimRestController {
     private final IOnirimService onirimService;
 
     @Operation(summary = "Retrieve a Page of Games",
-            description = "Get a page of game object. The response is a page object with a content of game objects.",
-            tags = { "game", "get" })
+            description = "Get a page of game object. The response is a page object with a content of game objects.")
+            //tags = { "game", "get" })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK",
                     content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)) }) })
@@ -53,8 +53,7 @@ public class OnirimRestController {
     }*/
 
     @Operation(summary = "Retrieve a Game by Id",
-            description = "Get a game object by specifying its id.",
-            tags = { "game", "get" })
+            description = "Get a game object by specifying its id.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK",
                     content = { @Content(mediaType = "application/json", schema = @Schema(implementation = GameDTO.class)) }),
@@ -65,20 +64,20 @@ public class OnirimRestController {
     }
 
     @Operation(summary = "Create a new Game",
-            description = "Create a new game to start playing.",
-            tags = { "game", "post" })
+            description = "Create a new game to start playing.")
     @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Created") })
     @PostMapping(path = ONIRIM_PATH)
-    public ResponseEntity<HttpHeaders> createNewGame() {
+    public ResponseEntity<String> createNewGame() {
         UUID createdGameId = onirimService.createNewGame();
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", ONIRIM_PATH + "/" + createdGameId);
-        return new ResponseEntity<>(headers, HttpStatus.CREATED);
+        String location = "Location: " + ONIRIM_PATH + "/" + createdGameId;
+        return new ResponseEntity<>(location, HttpStatus.CREATED);
+        //HttpHeaders headers = new HttpHeaders();
+        //headers.add("Location", ONIRIM_PATH + "/" + createdGameId);
+        //return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Play a Card from Hand",
-            description = "Play the selected card from the hand to the game.",
-            tags = { "game", "put" })
+            description = "Play the selected card from the hand to the game.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "400", description = "Invalid card index."),
@@ -93,8 +92,7 @@ public class OnirimRestController {
     }
 
     @Operation(summary = "Discard a Card from Hand",
-            description = "Discard the selected card from the hand to the discard pile.",
-            tags = { "game", "put" })
+            description = "Discard the selected card from the hand to the discard pile.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "400", description = "Invalid card index."),
@@ -107,8 +105,7 @@ public class OnirimRestController {
     }
 
     @Operation(summary = "Activate a Prophecy",
-            description = "Activate a prophecy from the card deck.",
-            tags = { "game", "put" })
+            description = "Activate a prophecy from the card deck.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "404", description = "Game not found."),
@@ -120,8 +117,7 @@ public class OnirimRestController {
     }
 
     @Operation(summary = "Confirm a Prophecy",
-            description = "Confirm a prophecy to the card deck.",
-            tags = { "game", "put" })
+            description = "Confirm a prophecy to the card deck.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "400", description = "Invalid card index."),
@@ -134,8 +130,7 @@ public class OnirimRestController {
     }
 
     @Operation(summary = "Draw a Card from Deck",
-            description = "Draw a new card from the card deck.",
-            tags = { "game", "put" })
+            description = "Draw a new card from the card deck.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "404", description = "Game not found."),
@@ -147,8 +142,7 @@ public class OnirimRestController {
     }
 
     @Operation(summary = "Discard a Key Card from Hand",
-            description = "Discard the selected key card from the hand to the discard pile.",
-            tags = { "game", "put" })
+            description = "Discard the selected key card from the hand to the discard pile.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "400", description = "Invalid card index."),
@@ -163,8 +157,7 @@ public class OnirimRestController {
     }
 
     @Operation(summary = "Lose a Door Card",
-            description = "Lose the selected door card from the discovered doors deck to the game deck.",
-            tags = { "game", "put" })
+            description = "Lose the selected door card from the discovered doors deck to the game deck.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "400", description = "Invalid card index."),
@@ -177,8 +170,7 @@ public class OnirimRestController {
     }
 
     @Operation(summary = "Discard the top Cards from the Deck",
-            description = "Discard the top 5 cards from the deck to the discard pile.",
-            tags = { "game", "put" })
+            description = "Discard the top 5 cards from the deck to the discard pile.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "404", description = "Game not found."),
@@ -190,8 +182,7 @@ public class OnirimRestController {
     }
 
     @Operation(summary = "Discard the Player Hand",
-            description = "Discard the entire player hand to the discard pile.",
-            tags = { "game", "put" })
+            description = "Discard the entire player hand to the discard pile.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "404", description = "Game not found."),

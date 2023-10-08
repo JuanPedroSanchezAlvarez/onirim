@@ -23,8 +23,6 @@ public class OpenAPIConfig {
     @Value("${onirim.openapi.pro-url}")
     private String prodUrl;
 
-    private final String securitySchemeName = "bearerAuth";
-
     @Bean
     public OpenAPI openAPI() {
 
@@ -53,6 +51,7 @@ public class OpenAPIConfig {
         prodServer.setUrl(prodUrl);
         prodServer.setDescription("Production Server");
 
+        String securitySchemeName = "JwtAuthToken";
         SecurityRequirement securityRequirement = new SecurityRequirement().addList(securitySchemeName);
         SecurityScheme securityScheme = new SecurityScheme()
                 .name(securitySchemeName)
@@ -61,35 +60,26 @@ public class OpenAPIConfig {
                 .bearerFormat("JWT");
         Components components = new Components().addSecuritySchemes(securitySchemeName, securityScheme);
 
+        /*Scopes scopes = new Scopes()
+                .addString("read", "for read operations")
+                .addString("write", "for write operations");
+        OAuthFlow oAuthFlow = new OAuthFlow()
+                .tokenUrl("http://localhost:8080/oauth/token")
+                .scopes(scopes);
+        OAuthFlows oAuthFlows = new OAuthFlows().clientCredentials(oAuthFlow);
+        SecurityScheme securityScheme = new SecurityScheme()
+                .name("springOauth")
+                .description("Oauth2Flow")
+                .type(SecurityScheme.Type.OAUTH2)
+                .flows(oAuthFlows);
+        Components components = new Components().addSecuritySchemes("springOauth", securityScheme);*/
+
         return new OpenAPI()
                 .info(info)
                 .servers(List.of(devServer, prodServer))
                 .addSecurityItem(securityRequirement)
                 .components(components);
-
-        /*return new OpenAPI()
-                .components(new Components()
-                        .addSecuritySchemes("spring_oauth", new SecurityScheme()
-                                .type(SecurityScheme.Type.OAUTH2)
-                                .description("Oauth2 flow")
-                                .flows(new OAuthFlows()
-                                        .clientCredentials(new OAuthFlow()
-                                                .tokenUrl("http://localhost:8080" + "/oauth/token")
-                                                .scopes(new Scopes()
-                                                        .addString("read", "for read operations")
-                                                        .addString("write", "for write operations")
-                                                ))))
-                )
-                .security(Arrays.asList(
-                        new SecurityRequirement().addList("spring_oauth")))
-                .info(new Info()
-                        .title("Book Application API")
-                        .description("This is a sample Spring Boot RESTful service using springdoc-openapi and OpenAPI 3.")
-                        .termsOfService("terms")
-                        .contact(new Contact().email("codersitedev@gmail.com").name("Developer: Moises Gamio"))
-                        .license(new License().name("GNU"))
-                        .version("2.0")
-                );*/
+                //.security(Collections.singletonList(new SecurityRequirement().addList("springOauth")));
     }
 
 }

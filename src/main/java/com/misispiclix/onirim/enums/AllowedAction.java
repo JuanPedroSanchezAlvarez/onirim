@@ -1,0 +1,13 @@
+package com.misispiclix.onirim.enums;
+
+public enum AllowedAction {
+    PLAY_CARD_FROM_HAND,
+    DISCARD_CARD_FROM_HAND,
+    DRAW_CARD_FROM_DECK,
+    ACTIVATE_PROPHECY,
+    CONFIRM_PROPHECY,
+    DISCARD_KEY_CARD_FROM_HAND,
+    LOSE_DOOR_CARD,
+    DISCARD_TOP_CARDS_FROM_DECK,
+    DISCARD_PLAYER_HAND
+}

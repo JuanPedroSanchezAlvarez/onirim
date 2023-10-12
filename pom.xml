@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.misispiclix</groupId>
-	<artifactId>single-player-games</artifactId>
+	<artifactId>onirim</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>single-player-games</name>
+	<name>onirim</name>
 	<description>Desktop Spring Boot Project</description>
 	<properties>
 		<java.version>17</java.version>
